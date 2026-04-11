@@ -30,7 +30,21 @@ const SendToEditorIcon = () => (
   </svg>
 )
 
-const CodeBlock = ({ node, inline, className, children, onSendToEditor, ...props }) => {
+const RunIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <polygon points="5 3 19 12 5 21 5 3" />
+  </svg>
+)
+
+const SaveIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </svg>
+)
+
+const CodeBlock = ({ node, inline, className, children, onSendToEditor, onRunCode, onSaveSnippet, ...props }) => {
   const match = /language-(\w+)/.exec(className || '')
   const language = match ? match[1] : ''
   const [copied, setCopied] = useState(false)
@@ -52,9 +66,19 @@ const CodeBlock = ({ node, inline, className, children, onSendToEditor, ...props
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleRun = () => {
+    const text = String(children).replace(/\n$/, '')
+    if (onRunCode) onRunCode(text)
+  }
+
   const handleSendToEditor = () => {
     const text = String(children).replace(/\n$/, '')
     if (onSendToEditor) onSendToEditor(text)
+  }
+
+  const handleSaveSnippet = () => {
+    const text = String(children).replace(/\n$/, '')
+    if (onSaveSnippet) onSaveSnippet(text)
   }
 
   return !inline && match ? (
@@ -62,10 +86,21 @@ const CodeBlock = ({ node, inline, className, children, onSendToEditor, ...props
       <div className="code-block-header">
         <span className="code-lang">{language}</span>
         <div className="code-block-actions">
+          {language === 'python' && onRunCode && (
+            <button className="copy-btn run-code-btn" onClick={handleRun} title="Запустить код">
+              <RunIcon />
+              Запустить
+            </button>
+          )}
           {language === 'python' && onSendToEditor && (
             <button className="copy-btn" onClick={handleSendToEditor} title="Отправить в редактор">
               <SendToEditorIcon />
               В редактор
+            </button>
+          )}
+          {language === 'python' && onSaveSnippet && (
+            <button className="copy-btn" onClick={handleSaveSnippet} title="Сохранить в избранное">
+              <SaveIcon />
             </button>
           )}
           <button className="copy-btn" onClick={handleCopy} title="Копировать код">
@@ -106,7 +141,7 @@ const HighlightedText = ({ text, query }) => {
   )
 }
 
-const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor, isVoiceSpeaking, onSpeak, onStopSpeak }) => {
+const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor, onRunCode, onSaveSnippet, isVoiceSpeaking, onSpeak, onStopSpeak }) => {
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
@@ -153,7 +188,12 @@ const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor
                   <ReactMarkdown
                     components={{
                       code: (props) => (
-                        <CodeBlock {...props} onSendToEditor={onSendToEditor} />
+                        <CodeBlock
+                          {...props}
+                          onSendToEditor={onSendToEditor}
+                          onRunCode={onRunCode}
+                          onSaveSnippet={onSaveSnippet}
+                        />
                       ),
                     }}
                   >
@@ -180,7 +220,7 @@ const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor
                             onSendToEditor(code)
                           }
                         }}
-                        title="Отправить код в редактор"
+                        title="Отправить весь код в редактор"
                       >
                         <SendToEditorIcon />
                       </button>

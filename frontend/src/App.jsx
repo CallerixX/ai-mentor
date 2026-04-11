@@ -3,6 +3,10 @@ import Chat from './components/Chat'
 import MarkdownToolbar from './components/MarkdownToolbar'
 import VoiceInput from './components/VoiceInput'
 import CodeRunner from './components/CodeRunner'
+import SessionList from './components/SessionList'
+import SnippetsPanel from './components/SnippetsPanel'
+import SolutionChecker from './components/SolutionChecker'
+import ThemeSwitcher from './components/ThemeSwitcher'
 import useVoiceOutput from './hooks/useVoiceOutput'
 
 const MODES = [
@@ -15,22 +19,36 @@ const MODES = [
 function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
-  const [mode, setMode] = useState(() => {
-    return localStorage.getItem('ai-mentor-mode') || 'Обучение'
-  })
-  const [selectedVoice, setSelectedVoice] = useState(() => {
-    return localStorage.getItem('ai-mentor-voice') || ''
-  })
+  const [mode, setMode] = useState(() => localStorage.getItem('ai-mentor-mode') || 'Обучение')
+  const [selectedVoice, setSelectedVoice] = useState(() => localStorage.getItem('ai-mentor-voice') || '')
   const [isTyping, setIsTyping] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showCodeRunner, setShowCodeRunner] = useState(false)
   const [pendingCode, setPendingCode] = useState('')
+  const [pendingTask, setPendingTask] = useState('')
+  const [showSolutionChecker, setShowSolutionChecker] = useState(false)
+  const [showSnippets, setShowSnippets] = useState(false)
+
+  // Sessions
+  const [sessions, setSessions] = useState([])
+  const [activeSessionId, setActiveSessionId] = useState(null)
+
+  // Theme
+  const [theme, setTheme] = useState(() => localStorage.getItem('ai-mentor-theme') || 'dark')
+
   const textareaRef = useRef(null)
 
   const { speak, stop, isSpeaking: isVoiceSpeaking, russianVoices } = useVoiceOutput(selectedVoice)
 
+  // Theme
+  useEffect(() => {
+    localStorage.setItem('ai-mentor-theme', theme)
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  // Voice
   useEffect(() => {
     if (selectedVoice) {
       localStorage.setItem('ai-mentor-voice', selectedVoice)
@@ -39,21 +57,51 @@ function App() {
     }
   }, [selectedVoice])
 
+  // Mode
   useEffect(() => {
     localStorage.setItem('ai-mentor-mode', mode)
   }, [mode])
 
+  // Load sessions
   useEffect(() => {
-    fetch('/api/history')
+    fetch('/api/sessions')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.sessions && data.sessions.length > 0) {
+          setSessions(data.sessions)
+          const lastActive = localStorage.getItem('ai-mentor-active-session')
+          const sid = lastActive && data.sessions.find((s) => s.id === parseInt(lastActive))
+            ? parseInt(lastActive)
+            : data.sessions[0].id
+          setActiveSessionId(sid)
+          loadSessionHistory(sid)
+        }
+      })
+      .catch((err) => {
+        console.error('Error loading sessions:', err)
+        setIsLoaded(true)
+      })
+  }, [])
+
+  // Save active session
+  useEffect(() => {
+    if (activeSessionId) {
+      localStorage.setItem('ai-mentor-active-session', activeSessionId)
+    }
+  }, [activeSessionId])
+
+  const loadSessionHistory = (sid) => {
+    fetch(`/api/history?session_id=${sid}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.messages && data.messages.length > 0) {
-          const formatted = data.messages.map((m) => ({
+          setMessages(data.messages.map((m) => ({
             role: m.role === 'user' ? 'user' : 'assistant',
             content: m.content,
             timestamp: m.timestamp || new Date().toISOString(),
-          }))
-          setMessages(formatted)
+          })))
+        } else {
+          setMessages([])
         }
         setIsLoaded(true)
       })
@@ -61,31 +109,56 @@ function App() {
         console.error('Error loading history:', err)
         setIsLoaded(true)
       })
-  }, [])
+  }
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === 'f') {
-        e.preventDefault()
-        setShowSearch((prev) => !prev)
-      }
-      if (e.key === 'Escape') {
-        if (showSearch) {
-          setShowSearch(false)
-          setSearchQuery('')
-        } else if (textareaRef.current) {
-          textareaRef.current.focus()
+  const switchSession = (sid) => {
+    setActiveSessionId(sid)
+    loadSessionHistory(sid)
+  }
+
+  const createSession = (name) => {
+    fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setSessions((prev) => [data, ...prev])
+        switchSession(data.id)
+      })
+      .catch(console.error)
+  }
+
+  const deleteSession = (sid) => {
+    fetch(`/api/sessions/${sid}`, { method: 'DELETE' })
+      .then(() => {
+        setSessions((prev) => prev.filter((s) => s.id !== sid))
+        if (activeSessionId === sid && sessions.length > 1) {
+          const remaining = sessions.filter((s) => s.id !== sid)
+          if (remaining.length > 0) switchSession(remaining[0].id)
         }
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showSearch])
+      })
+      .catch(console.error)
+  }
+
+  const renameSession = (sid, name) => {
+    fetch(`/api/sessions/${sid}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+      .then(() => {
+        setSessions((prev) =>
+          prev.map((s) => (s.id === sid ? { ...s, name } : s))
+        )
+      })
+      .catch(console.error)
+  }
 
   const formatTime = (isoString) => {
     if (!isoString) return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-    const date = new Date(isoString)
-    return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+    return new Date(isoString).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
   }
 
   const sendMessage = async () => {
@@ -101,7 +174,7 @@ function App() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage.content, mode }),
+        body: JSON.stringify({ message: userMessage.content, mode, session_id: activeSessionId }),
       })
 
       const reader = response.body.getReader()
@@ -132,8 +205,8 @@ function App() {
                 updated[updated.length - 1] = { ...assistantMessage }
                 return updated
               })
-            } catch (e) {
-              // Skip invalid JSON
+            } catch {
+              // skip
             }
           }
         }
@@ -176,20 +249,11 @@ function App() {
     if (!text) return
 
     const isCode = text.includes('\n') && (
-      text.includes('function') ||
-      text.includes('const ') ||
-      text.includes('let ') ||
-      text.includes('var ') ||
-      text.includes('import ') ||
-      text.includes('def ') ||
-      text.includes('class ') ||
-      text.includes('for ') ||
-      text.includes('if ') ||
-      text.includes('{') ||
-      text.includes('=>') ||
-      text.includes(';') ||
-      text.includes('#include') ||
-      text.includes('print(')
+      text.includes('function') || text.includes('const ') || text.includes('let ') ||
+      text.includes('var ') || text.includes('import ') || text.includes('def ') ||
+      text.includes('class ') || text.includes('for ') || text.includes('if ') ||
+      text.includes('{') || text.includes('=>') || text.includes(';') ||
+      text.includes('#include') || text.includes('print(')
     )
 
     if (isCode) {
@@ -229,19 +293,37 @@ function App() {
       const separator = prev ? prev + ' ' : ''
       return separator + text
     })
-    if (textareaRef.current) {
-      textareaRef.current.focus()
-    }
+    if (textareaRef.current) textareaRef.current.focus()
   }, [])
 
   const handleSendToEditor = useCallback((code) => {
     setPendingCode(code)
+    setPendingTask('')
     setShowCodeRunner(true)
   }, [])
 
+  const handleRunCodeFromChat = useCallback((code) => {
+    setPendingCode(code)
+    setPendingTask('')
+    setShowCodeRunner(true)
+  }, [])
+
+  const handleSaveSnippet = useCallback((code) => {
+    const snippets = JSON.parse(localStorage.getItem('ai-mentor-snippets') || '[]')
+    snippets.unshift({
+      id: Date.now(),
+      code,
+      tags: ['из чата'],
+      created: new Date().toLocaleDateString('ru-RU'),
+    })
+    localStorage.setItem('ai-mentor-snippets', JSON.stringify(snippets))
+    setShowSnippets(true)
+  }, [])
+
   const clearHistory = async () => {
+    if (!activeSessionId) return
     try {
-      await fetch('/api/history', { method: 'DELETE' })
+      await fetch(`/api/history?session_id=${activeSessionId}`, { method: 'DELETE' })
       setMessages([])
     } catch (err) {
       console.error('Error clearing history:', err)
@@ -250,6 +332,8 @@ function App() {
 
   const exportChat = () => {
     if (messages.length === 0) return
+    const activeSession = sessions.find((s) => s.id === activeSessionId)
+    const sessionName = activeSession ? activeSession.name : 'Чат'
     const content = messages
       .map((m) => {
         const time = formatTime(m.timestamp)
@@ -257,13 +341,12 @@ function App() {
         return `### ${role} (${time})\n\n${m.content}\n`
       })
       .join('\n---\n\n')
-
-    const header = `# AI Mentor — Экспорт чата\n\n**Режим:** ${mode}\n**Дата:** ${new Date().toLocaleString('ru-RU')}\n\n---\n\n`
+    const header = `# AI Mentor — ${sessionName}\n\n**Режим:** ${mode}\n**Дата:** ${new Date().toLocaleString('ru-RU')}\n\n---\n\n`
     const blob = new Blob([header + content], { type: 'text/markdown;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `ai-mentor-chat-${new Date().toISOString().slice(0, 10)}.md`
+    a.download = `ai-mentor-${sessionName}-${new Date().toISOString().slice(0, 10)}.md`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -278,7 +361,7 @@ function App() {
 
   if (!isLoaded) {
     return (
-      <div className="app-wrapper">
+      <div className={`app-wrapper theme-${theme}`}>
         <div className="welcome-screen">
           <div className="welcome-icon">🧠</div>
           <div className="welcome-title">Загрузка...</div>
@@ -288,15 +371,24 @@ function App() {
   }
 
   return (
-    <div className={`app-wrapper ${showCodeRunner ? 'with-code-runner' : ''}`}>
+    <div className={`app-wrapper theme-${theme} ${showCodeRunner ? 'with-code-runner' : ''}`}>
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo">🧠</div>
           <span className="sidebar-title">AI Mentor</span>
         </div>
 
+        <SessionList
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          onSelect={switchSession}
+          onCreate={createSession}
+          onDelete={deleteSession}
+          onRename={renameSession}
+        />
+
         <div className="mode-section">
-          <div className="mode-label">Режим обучения</div>
+          <div className="mode-label">Режим</div>
           <div className="mode-selector-modern">
             {MODES.map((m) => (
               <button
@@ -314,20 +406,30 @@ function App() {
         <div className="sidebar-tools">
           <button
             className={`tool-btn ${showCodeRunner ? 'tool-btn-active' : ''}`}
-            onClick={() => setShowCodeRunner(!showCodeRunner)}
+            onClick={() => { setPendingCode(''); setPendingTask(''); setShowCodeRunner(!showCodeRunner) }}
           >
-            <span className="tool-icon">🐍</span>
-            Python REPL
+            <span className="tool-icon">🐍</span> Python REPL
           </button>
+          <button
+            className={`tool-btn ${showSnippets ? 'tool-btn-active' : ''}`}
+            onClick={() => setShowSnippets(!showSnippets)}
+          >
+            <span className="tool-icon">📌</span> Сниппеты
+          </button>
+          {mode === 'Практика' && (
+            <button
+              className={`tool-btn ${showSolutionChecker ? 'tool-btn-active' : ''}`}
+              onClick={() => { setPendingCode(''); setPendingTask(''); setShowSolutionChecker(!showSolutionChecker) }}
+            >
+              <span className="tool-icon">✅</span> Проверка
+            </button>
+          )}
         </div>
 
         <div className="sidebar-footer">
-          <button className="clear-btn" onClick={clearHistory}>
-            🗑️ Очистить историю
-          </button>
-          <button className="export-btn" onClick={exportChat} disabled={messages.length === 0}>
-            📥 Экспорт чата
-          </button>
+          <ThemeSwitcher currentTheme={theme} onChange={setTheme} />
+          <button className="clear-btn" onClick={clearHistory}>🗑️ Очистить чат</button>
+          <button className="export-btn" onClick={exportChat} disabled={messages.length === 0}>📥 Экспорт</button>
         </div>
       </aside>
 
@@ -335,6 +437,11 @@ function App() {
         <header className="chat-header">
           <div className="chat-header-title">
             {currentMode.icon} {currentMode.label}
+            {sessions.find((s) => s.id === activeSessionId) && (
+              <span className="session-badge">
+                {sessions.find((s) => s.id === activeSessionId)?.name}
+              </span>
+            )}
           </div>
           <div className="chat-header-actions">
             {russianVoices.length > 0 && (
@@ -345,30 +452,22 @@ function App() {
                   onChange={(e) => setSelectedVoice(e.target.value)}
                   title="Выбор голоса"
                 >
-                  <option value="">Авто (лучший)</option>
+                  <option value="">Авто</option>
                   {russianVoices.map((v) => (
-                    <option key={v.name} value={v.name}>
-                      {v.name}
-                    </option>
+                    <option key={v.name} value={v.name}>{v.name}</option>
                   ))}
                 </select>
                 <button
                   className="voice-test-btn"
-                  onClick={() => {
-                    const testText = 'Привет! Я ваш AI-ментор. Как дела?'
-                    if (speak) speak(testText)
-                  }}
+                  onClick={() => speak && speak('Привет! Я ваш AI-ментор.')}
                 >
                   🔊 Тест
                 </button>
               </div>
             )}
-            <button className="header-action-btn" onClick={() => setShowSearch(!showSearch)} title="Поиск (Ctrl+F)">
-              🔍
-            </button>
+            <button className="header-action-btn" onClick={() => setShowSearch(!showSearch)} title="Поиск (Ctrl+F)">🔍</button>
             <div className="chat-header-status">
-              <span className="status-dot"></span>
-              Ollama подключена
+              <span className="status-dot"></span> Ollama
             </div>
           </div>
         </header>
@@ -383,9 +482,7 @@ function App() {
               className="search-input"
             />
             <span className="search-hint">
-              {searchQuery.trim()
-                ? `Найдено: ${filteredMessages.length} из ${messages.length}`
-                : `${messages.length} сообщений`}
+              {searchQuery.trim() ? `Найдено: ${filteredMessages.length} из ${messages.length}` : `${messages.length} сообщений`}
             </span>
           </div>
         )}
@@ -395,18 +492,12 @@ function App() {
             <div className="welcome-icon">🚀</div>
             <h2 className="welcome-title">Добро пожаловать в AI Mentor</h2>
             <p className="welcome-subtitle">
-              Выберите режим обучения и начните диалог. Я помогу вам разобраться в программировании.
+              Выберите режим и начните диалог. Я помогу вам разобраться в программировании.
             </p>
             <div className="welcome-hints">
-              <div className="hint-item">
-                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> — отправить
-              </div>
-              <div className="hint-item">
-                <kbd>Ctrl</kbd> + <kbd>F</kbd> — поиск
-              </div>
-              <div className="hint-item">
-                <kbd>Esc</kbd> — закрыть поиск
-              </div>
+              <div className="hint-item"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> отправить</div>
+              <div className="hint-item"><kbd>Ctrl</kbd>+<kbd>F</kbd> поиск</div>
+              <div className="hint-item"><kbd>Esc</kbd> закрыть</div>
             </div>
           </div>
         ) : (
@@ -416,6 +507,8 @@ function App() {
             formatTime={formatTime}
             searchQuery={searchQuery}
             onSendToEditor={handleSendToEditor}
+            onRunCode={handleRunCodeFromChat}
+            onSaveSnippet={handleSaveSnippet}
             isVoiceSpeaking={isVoiceSpeaking()}
             onSpeak={speak}
             onStopSpeak={stop}
@@ -432,17 +525,11 @@ function App() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               onPaste={handlePaste}
-              placeholder="Напишите сообщение... (Enter для отправки, Shift+Enter — новая строка)"
+              placeholder="Напишите сообщение... (Enter — отправить, Shift+Enter — новая строка)"
               disabled={isTyping}
               rows={1}
             />
-            <button
-              className="send-btn"
-              onClick={sendMessage}
-              disabled={isTyping || !input.trim()}
-            >
-              ➤
-            </button>
+            <button className="send-btn" onClick={sendMessage} disabled={isTyping || !input.trim()}>➤</button>
           </div>
         </div>
       </main>
@@ -455,6 +542,19 @@ function App() {
           </div>
           <CodeRunner initialCode={pendingCode} />
         </aside>
+      )}
+
+      {showSnippets && (
+        <SnippetsPanel isOpen={showSnippets} onClose={() => setShowSnippets(false)} />
+      )}
+
+      {showSolutionChecker && (
+        <SolutionChecker
+          isOpen={showSolutionChecker}
+          onClose={() => setShowSolutionChecker(false)}
+          initialCode={pendingCode}
+          initialTask={pendingTask}
+        />
       )}
     </div>
   )
