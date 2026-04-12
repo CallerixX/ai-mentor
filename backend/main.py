@@ -67,6 +67,7 @@ class ChatRequest(BaseModel):
     message: str
     mode: str = "Обучение"
     session_id: Optional[int] = None
+    skill: Optional[str] = None
 
 
 class SessionCreate(BaseModel):
@@ -192,8 +193,9 @@ async def chat(request: ChatRequest):
 
     async def event_stream():
         full_response = ""
+        skill_name = request.skill or "Python"
         try:
-            async for chunk in ollama.stream_chat(messages_for_ollama, request.mode):
+            async for chunk in ollama.stream_chat(messages_for_ollama, request.mode, skill_name):
                 full_response += chunk
                 data = json.dumps({"content": chunk, "done": False})
                 yield f"data: {data}\n\n"
