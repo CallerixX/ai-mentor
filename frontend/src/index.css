@@ -620,9 +620,13 @@ body {
 .skill-dialog-subtitle { color: var(--text-muted); font-size: 0.9375rem; margin-bottom: 2rem; }
 
 .skill-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.625rem;
   margin-bottom: 2rem;
+  max-height: 420px; overflow-y: auto; padding-right: 0.5rem;
 }
+.skill-grid::-webkit-scrollbar { width: 4px; }
+.skill-grid::-webkit-scrollbar-track { background: transparent; }
+.skill-grid::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
 .skill-card {
   padding: 1rem 0.75rem;
   background: var(--bg-input-field);
@@ -659,6 +663,8 @@ body {
 }
 .skill-btn:hover { background: rgba(102, 126, 234, 0.15); border-color: var(--border-accent); }
 .skill-btn.active { background: rgba(102, 126, 234, 0.25); border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.skill-reset-btn { background: rgba(255, 255, 255, 0.03); border-style: dashed; }
+.skill-reset-btn:hover { background: rgba(102, 126, 234, 0.15); border-color: var(--border-accent); }
 
 /* ===== MULTI PANEL LAYOUTS ===== */
 .app-wrapper.with-code-runner .main-content,

@@ -316,6 +316,9 @@ function App() {
                 {s.icon}
               </button>
             ))}
+            <button className="skill-btn skill-reset-btn" onClick={() => { setSkill(''); setShowSkillPicker(true) }} title="Сменить навык">
+              🔄
+            </button>
           </div>
         </div>
 
