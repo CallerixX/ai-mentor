@@ -1,0 +1,152 @@
+Промт для Figma AI
+Скопируй весь текст ниже и вставь в Figma AI (Make Designs / AI):
+
+Design a complete dark-themed web application UI for an AI Programming Mentor called "AI Mentor". Here is everything you need to know:
+
+## Project Overview
+AI Mentor is a local AI tutor that teaches programming languages (Python, SQL, JavaScript, Java, C++, Rust, Go, etc.) and data skills. It features:
+- Real-time chat with AI mentor (streaming responses)
+- Voice input/output
+- Built-in Python & SQL code editors
+- Progress system with XP, levels, and achievements
+- Multi-session chat management
+- Skill selector for 20 different topics
+
+## Design System
+
+### Colors (Dark Theme)
+- Background: #0f0c29 → #1a1a3e → #24243e (gradient)
+- Sidebar: rgba(15, 15, 35, 0.95) with backdrop blur
+- Card/panel bg: rgba(255, 255, 255, 0.03)
+- Input bg: rgba(255, 255, 255, 0.04)
+- Border light: rgba(255, 255, 255, 0.06)
+- Border medium: rgba(255, 255, 255, 0.08)
+- Border accent: rgba(102, 126, 234, 0.3)
+- Accent gradient: #667eea → #764ba2
+- Accent light: #a78bfa
+- Accent glow: rgba(102, 126, 234, 0.3)
+- Text primary: #e0e0f0
+- Text secondary: #c4c4d8
+- Text muted: #8888a8
+- Text dim: #6a6a8a
+- Success: #4ade80
+- Error: #f87171
+- User bubble: gradient(rgba(102,126,234,0.25), rgba(118,75,162,0.25))
+- Assistant bubble: rgba(255,255,255,0.05)
+
+### Typography
+- Font: Inter (Google Fonts)
+- Headings: 700 weight
+- Body: 400-500 weight
+- Code: JetBrains Mono or Fira Code
+- Sizes: 0.625rem (labels) to 1.5rem (titles)
+
+### Spacing & Borders
+- Border radius: 8-14px for cards, 10-16px for bubbles, 12px for buttons
+- Padding: 0.5rem to 1.5rem
+- Gap: 0.25rem to 0.75rem
+
+### Layout
+- 3-panel layout: Left sidebar (280px) | Main chat (flex) | Right panel (code editor/snippets/stats, 460px)
+- Sidebar has: logo + title, progress bar, session list, skill selector, mode buttons, tool buttons, footer
+- Main area has: header with skill name + search + status, messages area, input area with toolbar
+- Right panels slide in from right with animation
+
+## Components to Design
+
+### 1. SIDEBAR (left, 280px wide)
+**Header:** App logo (40x40) + "AI Mentor" title with gradient text
+
+**Progress Section:** Clickable card showing current level icon (40x40), level name, level number, XP progress bar (6px tall, gradient fill), total XP text. Hover effect with slight lift.
+
+**Session List:** Scrollable list (max 200px height) of chat sessions. Each item: chat icon, session name (truncated with ellipsis), rename and delete icons (appear on hover). Active session highlighted with gradient background. "+" button at bottom to create new session.
+
+**Skill Selector:** Compact row of 20 small icon buttons (34x34px each) with a reset button (circular arrows). Active skill has accent border + glow.
+
+**Mode Selector:** 4 stacked buttons: Learning (book), Debug (bug+search), Code Review (checkmark+search), Practice (laptop). Active mode has gradient background.
+
+**Tools Section:** 3-4 buttons: Python REPL, SQL REPL, Snippets, Solution Checker. Each with icon + label.
+
+**Footer:** Theme switcher (3 circle buttons: moon/sun/black), Clear chat button (red border), Export button (blue border)
+
+### 2. CHAT HEADER
+Left: Skill icon + skill name + " — " + mode name + session badge (pill with session name)
+Right: Voice selector dropdown + test button + search button (magnifier) + status indicator (green dot + "Ollama" text)
+
+### 3. WELCOME SCREEN (empty chat)
+Centered: Welcome icon (rocket, 70x70), gradient title text, subtitle describing current skill, keyboard shortcut hints (Ctrl+Enter, Ctrl+F, Esc)
+
+### 4. MESSAGES AREA
+**User message:** Right-aligned, gradient background bubble, user avatar (32x32 circle), timestamp below right-aligned, white text
+
+**Assistant message:** Left-aligned, subtle background bubble, AI avatar (32x32 circle), timestamp below left-aligned, markdown content with code blocks
+
+**Code block:** Dark background, language label in top-left (uppercase, purple text), action buttons row top-right: Run (green), Send to editor, Save, Copy. Code area with syntax highlighting.
+
+**Message actions bar:** Below assistant messages — speaker icon (text-to-speech), send-to-editor icon. Hover state with accent background.
+
+**Typing indicator:** AI avatar + animated 3 dots + "Ментор думает..." text
+
+**Scroll to bottom button:** Fixed circle button (accent gradient) appears when scrolled up, with arrow down icon
+
+### 5. INPUT AREA
+**Markdown toolbar:** Row of small formatting buttons: Bold (B), Italic (I), Code (</>), Code Block ({ }), List (☰), Quote (❝)
+
+**Input wrapper:** Rounded rectangle with border, contains: voice input button (microphone, 34x34) — pulsing red when recording, textarea (auto-expand up to 120px), send button (42x42, accent gradient, rounded). Focus state: accent border + glow shadow.
+
+### 6. CODE RUNNER PANEL (right, 460px)
+Header: Title "Python REPL" or "SQL REPL" + close button
+Content: Code editor (monospace font, dark background), snippet buttons row (Hello, Cycle, Function, Lists, Class), Run button (green gradient, full width), Clear output button
+Output area: Dark background, green text for success, red for errors, max 200px height with scroll
+
+### 7. SNIPPETS PANEL (right, 380px)
+Header: Title "Избранные сниппеты" + add button + close button
+Tags filter row: "Все" + clickable tag pills
+Add form: Code textarea + tag input + save button
+Snippet cards: Tag pills, code preview (max 120px), date, copy + delete buttons
+
+### 8. SOLUTION CHECKER PANEL (right, 420px)
+Header: Title "Проверка решения" + collapse button + close button
+Inputs: Task input (optional), code textarea, explanation input (optional), check button (green)
+Result area: Markdown result with border
+
+### 9. STATS DASHBOARD (modal overlay)
+Header: Title + close button
+Level section: Large level icon (48x48), level name + number, XP progress bar (10px tall), XP text
+Stats grid: 3x2 grid of cards — Messages, Code Runs, Voice, Snippets, Exports, Skills tried. Each with icon + large number + label
+Skills section: Tag pills of explored skills
+Achievements grid: 4-column grid — unlocked achievements with icons + names, locked achievements shown as 🔒 + "???"
+
+### 10. SKILL PICKER OVERLAY (first launch)
+Centered dialog: App logo (56x56), gradient title "Чему хочешь научиться?", subtitle
+4-column grid of skill cards (20 cards): Each card has icon (34x34), skill name, short description. Hover: border accent + lift. Selected: accent border + glow.
+Confirm button: Full width, gradient background, "Начать обучение →"
+
+### 11. ACHIEVEMENT TOAST
+Fixed top-right notification: Achievement icon (36x36), title "Достижение разблокировано!" (purple small caps), achievement name (bold), description, close button. Slide-in animation from right.
+
+### 12. THEME SWITCHER
+3 circle buttons in a row: 🌙 Dark, ☀️ Light, 🖤 AMOLED. Active has accent border + glow.
+
+## States & Interactions
+- Hover: background tint, slight lift (translateY(-1px)), border color change
+- Active: gradient background, glow shadow
+- Disabled: 40% opacity, cursor not-allowed
+- Focus: accent border + box-shadow glow
+- Loading: spinner animation
+- Typing: 3 bouncing dots
+- Toast: slide-in from right, auto-dismiss after 4s
+- Panels: slide-in from right
+- Modals: scale + fade in
+
+## Screens to Generate
+1. **Empty state** — skill picker overlay on gradient background
+2. **Main chat view** — sidebar + welcome screen
+3. **Active conversation** — sidebar + messages with code blocks + input
+4. **Code runner open** — main chat + Python REPL panel
+5. **Stats dashboard** — main chat blurred + stats modal overlay
+6. **Achievement toast** — chat view + toast notification top-right
+7. **Skill selector compact** — show all 20 skill icons in sidebar
+8. **Light theme variant** — same layout with light colors
+
+Keep everything clean, modern, minimal. Use consistent spacing, proper visual hierarchy, and smooth transitions. No emojis — use SVG icon placeholders. All text in Russian.

@@ -1,5 +1,5 @@
 import React from 'react'
-import Icon from './Icon'
+import { GraduationCap } from 'lucide-react'
 
 const SKILLS = [
   { id: 'python', icon: 'python', label: 'Python', desc: 'Основы, ООП, алгоритмы' },
@@ -34,7 +34,9 @@ const SkillSelector = ({ currentSkill, onChange, onConfirm }) => {
   return (
     <div className="skill-overlay">
       <div className="skill-dialog">
-        <div className="skill-dialog-icon"><Icon name="logo" size={56} /></div>
+        <div className="skill-dialog-icon">
+          <GraduationCap size={40} strokeWidth={1.5} color="white" />
+        </div>
         <h2 className="skill-dialog-title">Чему хочешь научиться?</h2>
         <p className="skill-dialog-subtitle">Выбери навык — ментор адаптируется под тебя</p>
 
@@ -45,18 +47,16 @@ const SkillSelector = ({ currentSkill, onChange, onConfirm }) => {
               className={`skill-card ${selected === s.id ? 'selected' : ''}`}
               onClick={() => setSelected(s.id)}
             >
-              <span className="skill-card-icon"><Icon name={s.icon} size={34} /></span>
+              <span className="skill-card-icon">
+                <img src={`/icons/${s.icon}.svg`} alt={s.label} width={34} height={34} />
+              </span>
               <span className="skill-card-label">{s.label}</span>
               <span className="skill-card-desc">{s.desc}</span>
             </button>
           ))}
         </div>
 
-        <button
-          className="skill-confirm-btn"
-          onClick={handleConfirm}
-          disabled={!selected}
-        >
+        <button className="skill-confirm-btn" onClick={handleConfirm} disabled={!selected}>
           Начать обучение →
         </button>
       </div>

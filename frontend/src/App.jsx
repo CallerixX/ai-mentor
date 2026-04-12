@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Chat from './components/Chat'
 import MarkdownToolbar from './components/MarkdownToolbar'
 import VoiceInput from './components/VoiceInput'
@@ -11,15 +11,17 @@ import ThemeSwitcher from './components/ThemeSwitcher'
 import SkillSelector, { SKILLS } from './components/SkillSelector'
 import AchievementToast from './components/AchievementToast'
 import StatsDashboard from './components/StatsDashboard'
+import { Search, Send, RotateCcw, Trash2, Download, Code, Database, Bookmark, CheckSquare, Book, Bug, CheckCircle, Laptop } from 'lucide-react'
+import { motion } from 'motion/react'
 import Icon from './components/Icon'
 import useVoiceOutput from './hooks/useVoiceOutput'
 import useProgress from './hooks/useProgress'
 
 const MODES = [
-  { id: 'Обучение', icon: 'mode-learning', label: 'Обучение' },
-  { id: 'Дебаг', icon: 'mode-debug', label: 'Дебаг' },
-  { id: 'Код-ревью', icon: 'mode-review', label: 'Код-ревью' },
-  { id: 'Практика', icon: 'mode-practice', label: 'Практика' },
+  { id: 'Обучение', icon: Book, label: 'Обучение' },
+  { id: 'Дебаг', icon: Bug, label: 'Дебаг' },
+  { id: 'Код-ревью', icon: CheckCircle, label: 'Код-ревью' },
+  { id: 'Практика', icon: Laptop, label: 'Практика' },
 ]
 
 function App() {
@@ -303,7 +305,7 @@ function App() {
               </button>
             ))}
             <button className="skill-btn skill-reset-btn" onClick={() => { setSkill(''); setShowSkillPicker(true) }} title="Сменить навык">
-              <Icon name="skill-reset" size={22} />
+              <RotateCcw size={18} style={{ color: 'var(--text-muted)' }} />
             </button>
           </div>
         </div>
@@ -312,35 +314,39 @@ function App() {
           <div className="mode-label">Режим</div>
           <div className="mode-selector-modern">
             {MODES.map((m) => (
-              <button key={m.id} className={`mode-btn ${mode === m.id ? 'active' : ''}`} onClick={() => setMode(m.id)}>
-                <span className="mode-icon"><Icon name={m.icon} size={18} /></span>
+              <motion.button key={m.id} whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className={`mode-btn ${mode === m.id ? 'active' : ''}`} onClick={() => setMode(m.id)}>
+                <span className="mode-icon"><m.icon size={18} /></span>
                 {m.label}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
 
         <div className="sidebar-tools">
-          <button className={`tool-btn ${showCodeRunner ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowCodeRunner(!showCodeRunner); setShowSQLRunner(false) }}>
-            <span className="tool-icon"><Icon name="tool-python" size={18} /></span> Python REPL
-          </button>
-          <button className={`tool-btn ${showSQLRunner ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowSQLRunner(!showSQLRunner); setShowCodeRunner(false) }}>
-            <span className="tool-icon"><Icon name="tool-sql" size={18} /></span> SQL REPL
-          </button>
-          <button className={`tool-btn ${showSnippets ? 'tool-btn-active' : ''}`} onClick={() => setShowSnippets(!showSnippets)}>
-            <span className="tool-icon"><Icon name="tool-snippets" size={18} /></span> Сниппеты
-          </button>
+          <motion.button whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className={`tool-btn ${showCodeRunner ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowCodeRunner(!showCodeRunner); setShowSQLRunner(false) }}>
+            <Code size={18} /> Python REPL
+          </motion.button>
+          <motion.button whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className={`tool-btn ${showSQLRunner ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowSQLRunner(!showSQLRunner); setShowCodeRunner(false) }}>
+            <Database size={18} /> SQL REPL
+          </motion.button>
+          <motion.button whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className={`tool-btn ${showSnippets ? 'tool-btn-active' : ''}`} onClick={() => setShowSnippets(!showSnippets)}>
+            <Bookmark size={18} /> Сниппеты
+          </motion.button>
           {mode === 'Практика' && (
-            <button className={`tool-btn ${showSolutionChecker ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowSolutionChecker(!showSolutionChecker) }}>
-              <span className="tool-icon"><Icon name="tool-checker" size={18} /></span> Проверка
-            </button>
+            <motion.button whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className={`tool-btn ${showSolutionChecker ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowSolutionChecker(!showSolutionChecker) }}>
+              <CheckSquare size={18} /> Проверка
+            </motion.button>
           )}
         </div>
 
         <div className="sidebar-footer">
           <ThemeSwitcher currentTheme={theme} onChange={setTheme} />
-          <button className="clear-btn" onClick={clearHistory}><Icon name="delete" size={14} /> Очистить чат</button>
-          <button className="export-btn" onClick={exportChat} disabled={messages.length === 0}><Icon name="export" size={14} /> Экспорт</button>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="clear-btn" onClick={clearHistory}>
+            <Trash2 size={14} /> Очистить чат
+          </motion.button>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="export-btn" onClick={exportChat} disabled={messages.length === 0}>
+            <Download size={14} /> Экспорт
+          </motion.button>
         </div>
       </aside>
 
@@ -360,7 +366,9 @@ function App() {
                 <button className="voice-test-btn" onClick={() => speak && speak('Привет! Я ваш AI-ментор.')}>🔊 Тест</button>
               </div>
             )}
-            <button className="header-action-btn" onClick={() => setShowSearch(!showSearch)} title="Поиск (Ctrl+F)"><Icon name="search" size={14} /></button>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="header-action-btn" onClick={() => setShowSearch(!showSearch)} title="Поиск (Ctrl+F)">
+              <Search size={16} />
+            </motion.button>
             <div className="chat-header-status"><Icon name="status-dot" size={8} /> Ollama</div>
           </div>
         </header>
@@ -392,7 +400,9 @@ function App() {
           <div className="input-wrapper">
             <VoiceInput onTranscript={handleVoiceTranscript} disabled={isTyping} />
             <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} onPaste={handlePaste} placeholder="Напишите сообщение..." disabled={isTyping} rows={1} />
-            <button className="send-btn" onClick={sendMessage} disabled={isTyping || !input.trim()}><Icon name="send" size={20} /></button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="send-btn" onClick={sendMessage} disabled={isTyping || !input.trim()}>
+              <Send size={18} />
+            </motion.button>
           </div>
         </div>
       </main>
