@@ -9,7 +9,10 @@ import SnippetsPanel from './components/SnippetsPanel'
 import SolutionChecker from './components/SolutionChecker'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import SkillSelector, { SKILLS } from './components/SkillSelector'
+import AchievementToast from './components/AchievementToast'
+import StatsDashboard from './components/StatsDashboard'
 import useVoiceOutput from './hooks/useVoiceOutput'
+import useProgress from './hooks/useProgress'
 
 const MODES = [
   { id: 'Обучение', icon: '📚', label: 'Обучение' },
@@ -33,56 +36,54 @@ function App() {
   const [pendingTask, setPendingTask] = useState('')
   const [showSolutionChecker, setShowSolutionChecker] = useState(false)
   const [showSnippets, setShowSnippets] = useState(false)
+  const [showStats, setShowStats] = useState(false)
 
-  // Skills
   const [skill, setSkill] = useState(() => localStorage.getItem('ai-mentor-skill') || '')
   const [showSkillPicker, setShowSkillPicker] = useState(!localStorage.getItem('ai-mentor-skill'))
 
-  // Sessions
   const [sessions, setSessions] = useState([])
   const [activeSessionId, setActiveSessionId] = useState(null)
-
-  // Theme
   const [theme, setTheme] = useState(() => localStorage.getItem('ai-mentor-theme') || 'dark')
 
   const textareaRef = useRef(null)
-
   const { speak, stop, isSpeaking: isVoiceSpeaking, russianVoices } = useVoiceOutput(selectedVoice)
+  const {
+    stats, levelInfo, unlockedAchievements, lockedAchievements,
+    newAchievements, showAchievementToast,
+    recordMessage, recordCodeRun, recordVoiceMessage, recordSkill, recordExport, recordSnippetSave,
+  } = useProgress()
 
   const currentSkill = SKILLS.find((s) => s.id === skill) || SKILLS[0]
 
-  // Theme
   useEffect(() => {
     localStorage.setItem('ai-mentor-theme', theme)
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
-  // Voice
   useEffect(() => {
     if (selectedVoice) localStorage.setItem('ai-mentor-voice', selectedVoice)
     else localStorage.removeItem('ai-mentor-voice')
   }, [selectedVoice])
 
-  // Mode
   useEffect(() => {
     localStorage.setItem('ai-mentor-mode', mode)
   }, [mode])
 
-  // Skill
   useEffect(() => {
-    if (skill) localStorage.setItem('ai-mentor-skill', skill)
-  }, [skill])
+    if (skill) {
+      localStorage.setItem('ai-mentor-skill', skill)
+      recordSkill(skill)
+    }
+  }, [skill, recordSkill])
 
-  // Load sessions
   useEffect(() => {
     fetch('/api/sessions')
       .then((res) => res.json())
       .then((data) => {
-        if (data.sessions && data.sessions.length > 0) {
+        if (data.sessions?.length > 0) {
           setSessions(data.sessions)
           const lastActive = localStorage.getItem('ai-mentor-active-session')
-          const sid = lastActive && data.sessions.find((s) => s.id === parseInt(lastActive))
-            ? parseInt(lastActive) : data.sessions[0].id
+          const sid = lastActive && data.sessions.find((s) => s.id === parseInt(lastActive)) ? parseInt(lastActive) : data.sessions[0].id
           setActiveSessionId(sid)
           loadSessionHistory(sid)
         }
@@ -98,11 +99,7 @@ function App() {
     fetch(`/api/history?session_id=${sid}`)
       .then((res) => res.json())
       .then((data) => {
-        setMessages(data.messages ? data.messages.map((m) => ({
-          role: m.role === 'user' ? 'user' : 'assistant',
-          content: m.content,
-          timestamp: m.timestamp || new Date().toISOString(),
-        })) : [])
+        setMessages(data.messages ? data.messages.map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content, timestamp: m.timestamp || new Date().toISOString() })) : [])
         setIsLoaded(true)
       })
       .catch((err) => { console.error(err); setIsLoaded(true) })
@@ -111,10 +108,7 @@ function App() {
   const switchSession = (sid) => { setActiveSessionId(sid); loadSessionHistory(sid) }
 
   const createSession = (name) => {
-    fetch('/api/sessions', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: `${name} (${currentSkill.icon} ${currentSkill.label})` }),
-    })
+    fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${name} (${currentSkill.icon} ${currentSkill.label})` }) })
       .then((res) => res.json())
       .then((data) => { setSessions((p) => [data, ...p]); switchSession(data.id) })
       .catch(console.error)
@@ -124,19 +118,13 @@ function App() {
     fetch(`/api/sessions/${sid}`, { method: 'DELETE' })
       .then(() => {
         setSessions((p) => p.filter((s) => s.id !== sid))
-        if (activeSessionId === sid && sessions.length > 1) {
-          const remaining = sessions.filter((s) => s.id !== sid)
-          if (remaining.length > 0) switchSession(remaining[0].id)
-        }
+        if (activeSessionId === sid && sessions.length > 1) { const r = sessions.filter((s) => s.id !== sid); if (r.length) switchSession(r[0].id) }
       })
       .catch(console.error)
   }
 
   const renameSession = (sid, name) => {
-    fetch(`/api/sessions/${sid}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
-    })
+    fetch(`/api/sessions/${sid}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) })
       .then(() => setSessions((p) => p.map((s) => (s.id === sid ? { ...s, name } : s))))
       .catch(console.error)
   }
@@ -153,18 +141,15 @@ function App() {
     setMessages((p) => [...p, userMessage])
     setInput('')
     setIsTyping(true)
+    recordMessage()
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage.content, mode, session_id: activeSessionId, skill }),
-      })
+      const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: userMessage.content, mode, session_id: activeSessionId, skill }) })
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       const ts = new Date().toISOString()
       let assistantMessage = { role: 'assistant', content: '', timestamp: ts }
       setMessages((p) => [...p, assistantMessage])
-
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -196,37 +181,32 @@ function App() {
   const handlePaste = (e) => {
     const text = e.clipboardData.getData('text')
     if (!text) return
-    const isCode = text.includes('\n') && (
-      text.includes('function') || text.includes('const ') || text.includes('let ') ||
-      text.includes('import ') || text.includes('def ') || text.includes('class ') ||
-      text.includes('SELECT ') || text.includes('INSERT ') || text.includes('CREATE ') ||
-      text.includes('FROM ') || text.includes('JOIN ') || text.includes('{') || text.includes('=>')
-    )
+    const isCode = text.includes('\n') && (text.includes('function') || text.includes('const ') || text.includes('def ') || text.includes('class ') || text.includes('SELECT ') || text.includes('import ') || text.includes('{') || text.includes('=>'))
     if (isCode) {
       e.preventDefault()
-      const textarea = textareaRef.current
-      if (!textarea) return
-      const start = textarea.selectionStart; const end = textarea.selectionEnd
-      const before = '\n```\n'; const after = '\n```\n'
-      const newText = input.substring(0, start) + before + text + after + input.substring(end)
-      setInput(newText)
-      setTimeout(() => { textarea.focus(); const np = start + before.length + text.length + after.length; textarea.setSelectionRange(np, np) }, 0)
+      const ta = textareaRef.current; if (!ta) return
+      const s = ta.selectionStart; const en = ta.selectionEnd
+      const b = '\n```\n'; const a = '\n```\n'
+      const nt = input.substring(0, s) + b + text + a + input.substring(en)
+      setInput(nt)
+      setTimeout(() => { ta.focus(); const np = s + b.length + text.length + a.length; ta.setSelectionRange(np, np) }, 0)
     }
   }
 
   const insertAtCursor = (before, after = '') => {
     const ta = textareaRef.current; if (!ta) return
-    const start = ta.selectionStart; const end = ta.selectionEnd
-    const sel = input.substring(start, end)
-    const newText = input.substring(0, start) + before + sel + after + input.substring(end)
-    setInput(newText)
-    setTimeout(() => { ta.focus(); const np = start + before.length + sel.length; ta.setSelectionRange(np, np) }, 0)
+    const s = ta.selectionStart; const en = ta.selectionEnd
+    const sel = input.substring(s, en)
+    const nt = input.substring(0, s) + before + sel + after + input.substring(en)
+    setInput(nt)
+    setTimeout(() => { ta.focus(); const np = s + before.length + sel.length; ta.setSelectionRange(np, np) }, 0)
   }
 
   const handleVoiceTranscript = useCallback((text) => {
     setInput((p) => (p ? p + ' ' : '') + text)
     if (textareaRef.current) textareaRef.current.focus()
-  }, [])
+    recordVoiceMessage()
+  }, [recordVoiceMessage])
 
   const handleSendToEditor = useCallback((code) => {
     const isSQL = /SELECT|FROM|JOIN|WHERE|GROUP BY|ORDER BY/i.test(code)
@@ -245,7 +225,8 @@ function App() {
     snippets.unshift({ id: Date.now(), code, tags: ['из чата'], created: new Date().toLocaleDateString('ru-RU') })
     localStorage.setItem('ai-mentor-snippets', JSON.stringify(snippets))
     setShowSnippets(true)
-  }, [])
+    recordSnippetSave()
+  }, [recordSnippetSave])
 
   const clearHistory = async () => {
     if (!activeSessionId) return
@@ -254,21 +235,16 @@ function App() {
   }
 
   const exportChat = () => {
-    if (messages.length === 0) return
-    const activeSession = sessions.find((s) => s.id === activeSessionId)
-    const sName = activeSession ? activeSession.name : 'Чат'
-    const content = messages.map((m) => {
-      const time = formatTime(m.timestamp)
-      const role = m.role === 'user' ? '👤 Вы' : '🤖 Ментор'
-      return `### ${role} (${time})\n\n${m.content}\n`
-    }).join('\n---\n\n')
-    const header = `# AI Mentor — ${sName}\n\n**Навык:** ${currentSkill.icon} ${currentSkill.label}\n**Режим:** ${mode}\n**Дата:** ${new Date().toLocaleString('ru-RU')}\n\n---\n\n`
+    if (!messages.length) return
+    const as = sessions.find((s) => s.id === activeSessionId)
+    const sn = as ? as.name : 'Чат'
+    const content = messages.map((m) => { const t = formatTime(m.timestamp); const r = m.role === 'user' ? '👤 Вы' : '🤖 Ментор'; return `### ${r} (${t})\n\n${m.content}\n` }).join('\n---\n\n')
+    const header = `# AI Mentor — ${sn}\n\n**Навык:** ${currentSkill.icon} ${currentSkill.label}\n**Режим:** ${mode}\n**Дата:** ${new Date().toLocaleString('ru-RU')}\n\n---\n\n`
     const blob = new Blob([header + content], { type: 'text/markdown;charset=utf-8' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url
-    a.download = `ai-mentor-${sName}-${new Date().toISOString().slice(0, 10)}.md`
-    document.body.appendChild(a); a.click(); document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    const a = document.createElement('a'); a.href = url; a.download = `ai-mentor-${sn}-${new Date().toISOString().slice(0, 10)}.md`
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
+    recordExport()
   }
 
   const handleSkillConfirm = (newSkill) => {
@@ -277,11 +253,8 @@ function App() {
     createSession('Новый чат')
   }
 
-  const filteredMessages = searchQuery.trim()
-    ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
-    : messages
+  const filteredMessages = searchQuery.trim() ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase())) : messages
 
-  // Skill picker overlay
   if (showSkillPicker) {
     return (
       <div className={`app-wrapper theme-${theme}`}>
@@ -291,19 +264,31 @@ function App() {
   }
 
   if (!isLoaded) {
-    return (
-      <div className={`app-wrapper theme-${theme}`}>
-        <div className="welcome-screen"><div className="welcome-icon">🧠</div><div className="welcome-title">Загрузка...</div></div>
-      </div>
-    )
+    return <div className={`app-wrapper theme-${theme}`}><div className="welcome-screen"><div className="welcome-icon">🧠</div><div className="welcome-title">Загрузка...</div></div></div>
   }
 
   return (
     <div className={`app-wrapper theme-${theme} ${showCodeRunner || showSQLRunner ? 'with-code-runner' : ''} ${showSnippets ? 'with-snippets' : ''} ${showSolutionChecker ? 'with-solution-checker' : ''}`}>
+      <AchievementToast achievement={showAchievementToast} onClose={() => showAchievementToast && setShowAchievementToast(null)} />
+
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo">🧠</div>
           <span className="sidebar-title">AI Mentor</span>
+        </div>
+
+        <div className="progress-section" onClick={() => setShowStats(true)}>
+          <div className="progress-level-badge">
+            <span className="progress-icon">{levelInfo.icon}</span>
+            <div className="progress-info">
+              <span className="progress-level-name">{levelInfo.name}</span>
+              <span className="progress-level-num">Ур. {levelInfo.level}</span>
+            </div>
+          </div>
+          <div className="progress-xp-bar-bg">
+            <div className="progress-xp-bar-fill" style={{ width: `${levelInfo.progress}%`, background: `linear-gradient(90deg, ${levelInfo.color}, ${levelInfo.color}88)` }} />
+          </div>
+          <div className="progress-xp-text">{stats.totalXP} XP</div>
         </div>
 
         <SessionList sessions={sessions} activeSessionId={activeSessionId} onSelect={switchSession} onCreate={createSession} onDelete={deleteSession} onRename={renameSession} />
@@ -312,13 +297,9 @@ function App() {
           <div className="mode-label">Навык</div>
           <div className="skill-selector-compact">
             {SKILLS.map((s) => (
-              <button key={s.id} className={`skill-btn ${skill === s.id ? 'active' : ''}`} onClick={() => setSkill(s.id)} title={s.label}>
-                {s.icon}
-              </button>
+              <button key={s.id} className={`skill-btn ${skill === s.id ? 'active' : ''}`} onClick={() => setSkill(s.id)} title={s.label}>{s.icon}</button>
             ))}
-            <button className="skill-btn skill-reset-btn" onClick={() => { setSkill(''); setShowSkillPicker(true) }} title="Сменить навык">
-              🔄
-            </button>
+            <button className="skill-btn skill-reset-btn" onClick={() => { setSkill(''); setShowSkillPicker(true) }} title="Сменить навык">🔄</button>
           </div>
         </div>
 
@@ -361,9 +342,7 @@ function App() {
         <header className="chat-header">
           <div className="chat-header-title">
             {currentSkill.icon} {currentSkill.label} — {MODES.find((m) => m.id === mode)?.label}
-            {sessions.find((s) => s.id === activeSessionId) && (
-              <span className="session-badge">{sessions.find((s) => s.id === activeSessionId)?.name}</span>
-            )}
+            {sessions.find((s) => s.id === activeSessionId) && <span className="session-badge">{sessions.find((s) => s.id === activeSessionId)?.name}</span>}
           </div>
           <div className="chat-header-actions">
             {russianVoices.length > 0 && (
@@ -399,11 +378,7 @@ function App() {
             </div>
           </div>
         ) : (
-          <Chat
-            messages={filteredMessages} isTyping={isTyping} formatTime={formatTime} searchQuery={searchQuery}
-            onSendToEditor={handleSendToEditor} onRunCode={handleRunCodeFromChat} onSaveSnippet={handleSaveSnippet}
-            isVoiceSpeaking={isVoiceSpeaking()} onSpeak={speak} onStopSpeak={stop}
-          />
+          <Chat messages={filteredMessages} isTyping={isTyping} formatTime={formatTime} searchQuery={searchQuery} onSendToEditor={handleSendToEditor} onRunCode={handleRunCodeFromChat} onSaveSnippet={handleSaveSnippet} isVoiceSpeaking={isVoiceSpeaking()} onSpeak={speak} onStopSpeak={stop} />
         )}
 
         <div className="input-area">
@@ -419,19 +394,20 @@ function App() {
       {showCodeRunner && (
         <aside className="code-runner-panel">
           <div className="code-runner-panel-header"><span>🐍 Python REPL</span><button className="close-panel-btn" onClick={() => setShowCodeRunner(false)}>✕</button></div>
-          <CodeRunner initialCode={pendingCode} />
+          <CodeRunner initialCode={pendingCode} onCodeRun={recordCodeRun} />
         </aside>
       )}
 
       {showSQLRunner && (
         <aside className="code-runner-panel">
           <div className="code-runner-panel-header"><span>🗄️ SQL REPL (DuckDB)</span><button className="close-panel-btn" onClick={() => setShowSQLRunner(false)}>✕</button></div>
-          <SQLRunner initialCode={pendingCode} />
+          <SQLRunner initialCode={pendingCode} onCodeRun={recordCodeRun} />
         </aside>
       )}
 
       {showSnippets && <SnippetsPanel isOpen={showSnippets} onClose={() => setShowSnippets(false)} />}
       {showSolutionChecker && <SolutionChecker isOpen={showSolutionChecker} onClose={() => setShowSolutionChecker(false)} initialCode={pendingCode} initialTask={pendingTask} />}
+      {showStats && <StatsDashboard stats={stats} levelInfo={levelInfo} unlockedAchievements={unlockedAchievements} lockedAchievements={lockedAchievements} onClose={() => setShowStats(false)} />}
     </div>
   )
 }

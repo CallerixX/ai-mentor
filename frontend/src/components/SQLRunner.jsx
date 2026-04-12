@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 
-const SQLRunner = ({ initialCode }) => {
+const SQLRunner = ({ initialCode, onCodeRun }) => {
   const [code, setCode] = useState(
     initialCode || '-- SQL запрос\n-- Создаём таблицу\nCREATE TABLE users (\n    id INTEGER PRIMARY KEY,\n    name VARCHAR(50),\n    age INTEGER,\n    city VARCHAR(50)\n);\n\nINSERT INTO users VALUES\n    (1, \'Анна\', 25, \'Москва\'),\n    (2, \'Борис\', 30, \'Питер\'),\n    (3, \'Виктория\', 28, \'Москва\'),\n    (4, \'Григорий\', 35, \'Казань\'),\n    (5, \'Дарья\', 22, \'Питер\');\n\nSELECT city, COUNT(*) as cnt, AVG(age) as avg_age\nFROM users\nGROUP BY city\nORDER BY cnt DESC;\n'
   )
@@ -87,6 +87,7 @@ const SQLRunner = ({ initialCode }) => {
       })
 
       setOutput(out || 'Нет результатов')
+      if (onCodeRun) onCodeRun()
 
       // Update table info
       try {

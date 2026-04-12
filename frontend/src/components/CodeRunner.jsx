@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 
-const CodeRunner = ({ initialCode }) => {
+const CodeRunner = ({ initialCode, onCodeRun }) => {
   const [code, setCode] = useState(
     initialCode || '# Введите Python код здесь\nprint("Привет, мир!")\n'
   )
@@ -63,6 +63,7 @@ sys.stderr = StringIO()
       }
 
       setOutput(out || '(нет вывода)')
+      if (onCodeRun) onCodeRun()
 
       pyodide.runPython(`
 sys.stdout = sys.__stdout__
