@@ -1,0 +1,6 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Swift bird -->
+  <path d="M8 20C8 20 10 15 14 12C18 9 22 8 22 8M22 8C22 8 18 10 16 13M22 8C22 8 24 12 24 16C24 20 22 24 18 26C14 28 10 27 8 25" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16 13C16 13 12 16 10 20" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="23" cy="11" r="1.5" fill="#a78bfa"/>
+</svg>

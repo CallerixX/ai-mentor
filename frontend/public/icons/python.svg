@@ -1,0 +1,7 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Python snake -->
+  <path d="M17 6C17 6 12 6 10 8C8 10 8 12 8 12V16H17V17H10C10 17 6 17 6 21C6 25 10 25 10 25H13V22C13 22 13 18 17 18H23C23 18 27 18 27 14V10C27 10 27 6 23 6H17Z" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="13.5" cy="10.5" r="1.5" fill="#a78bfa"/>
+  <path d="M17 28C17 28 22 28 24 26C26 24 26 22 26 22V18H17V17H24C24 17 28 17 28 13C28 9 24 9 24 9H21V12C21 12 21 16 17 16H11C11 16 7 16 7 20V24C7 24 7 28 11 28H17Z" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="20.5" cy="23.5" r="1.5" fill="#a78bfa"/>
+</svg>

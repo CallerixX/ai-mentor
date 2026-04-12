@@ -1,0 +1,8 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Code snippets with bookmarks -->
+  <rect x="7" y="8" width="20" height="18" rx="2" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Bookmark tabs -->
+  <path d="M11 8V13L13 11L15 13V8M17 8V13L19 11L21 13V8" stroke="#a78bfa" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Code lines -->
+  <path d="M10 18H24M10 21H20M10 24H24" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Medal/badge -->
+  <circle cx="17" cy="18" r="8" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Code symbol inside -->
+  <path d="M13 16L11 18L13 20M21 16L23 18L21 20M19 15L15 21" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Ribbon -->
+  <path d="M13 11L17 7L21 11" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+</svg>

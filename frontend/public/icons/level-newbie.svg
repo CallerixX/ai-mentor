@@ -1,0 +1,6 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple badge with 1 star -->
+  <circle cx="17" cy="17" r="10" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Single star -->
+  <path d="M17 10L18.5 14.5H23L19.5 17.5L21 22L17 19L13 22L14.5 17.5L11 14.5H15.5L17 10Z" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>

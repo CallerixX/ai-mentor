@@ -1,0 +1,8 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Globe with languages -->
+  <circle cx="17" cy="17" r="10" stroke="#c4b5fd" stroke-width="2"/>
+  <path d="M7 17H27M17 7C17 7 20 10 20 17C20 24 17 27 17 27M17 7C17 7 14 10 14 17C14 24 17 27 17 27" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Language symbols -->
+  <text x="12" y="14" font-family="monospace" font-size="8" fill="#a78bfa" font-weight="bold">Py</text>
+  <text x="18" y="22" font-family="monospace" font-size="8" fill="#a78bfa" font-weight="bold">JS</text>
+</svg>

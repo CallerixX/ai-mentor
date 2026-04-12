@@ -1,0 +1,8 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Floppy disk -->
+  <rect x="7" y="7" width="20" height="20" rx="2" stroke="#c4b5fd" stroke-width="2"/>
+  <path d="M7 11C7 8.79086 8.79086 7 11 7H20L27 14V11" stroke="#c4b5fd" stroke-width="2"/>
+  <rect x="11" y="7" width="8" height="6" stroke="#a78bfa" stroke-width="2"/>
+  <!-- Disk plate -->
+  <rect x="10" y="17" width="14" height="7" rx="1" stroke="#a78bfa" stroke-width="2"/>
+</svg>

@@ -1,31 +1,31 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 const LEVELS = [
-  { min: 0, name: 'Новичок', icon: '🌱', color: '#4ade80' },
-  { min: 100, name: 'Ученик', icon: '📖', color: '#60a5fa' },
-  { min: 300, name: 'Практик', icon: '💻', color: '#a78bfa' },
-  { min: 600, name: 'Продвинутый', icon: '🚀', color: '#f472b6' },
-  { min: 1000, name: 'Мастер', icon: '🏆', color: '#fbbf24' },
-  { min: 2000, name: 'Легенда', icon: '👑', color: '#fb923c' },
+  { min: 0, name: 'Новичок', icon: 'level-newbie', color: '#4ade80' },
+  { min: 100, name: 'Ученик', icon: 'level-student', color: '#60a5fa' },
+  { min: 300, name: 'Практик', icon: 'level-practitioner', color: '#a78bfa' },
+  { min: 600, name: 'Продвинутый', icon: 'level-advanced', color: '#f472b6' },
+  { min: 1000, name: 'Мастер', icon: 'level-master', color: '#fbbf24' },
+  { min: 2000, name: 'Легенда', icon: 'level-legend', color: '#fb923c' },
 ]
 
 const ACHIEVEMENTS = [
-  { id: 'first-message', name: 'Первый шаг', desc: 'Отправь первое сообщение', icon: '👋', check: (s) => s.totalMessages >= 1 },
-  { id: 'first-code', name: 'Кодер', desc: 'Запусти первый код', icon: '▶️', check: (s) => s.codeRuns >= 1 },
-  { id: 'first-voice', name: 'Голос', desc: 'Отправь голосовое сообщение', icon: '🎤', check: (s) => s.voiceMessages >= 1 },
-  { id: 'ten-messages', name: 'Болтун', desc: 'Отправь 10 сообщений', icon: '💬', check: (s) => s.totalMessages >= 10 },
-  { id: 'hundred-messages', name: 'Сотня', desc: 'Отправь 100 сообщений', icon: '💯', check: (s) => s.totalMessages >= 100 },
-  { id: 'five-hundred-xp', name: 'Марафонец', desc: 'Набери 500 XP', icon: '🏃', check: (s) => s.totalXP >= 500 },
-  { id: 'thousand-xp', name: 'Тысячник', desc: 'Набери 1000 XP', icon: '🔥', check: (s) => s.totalXP >= 1000 },
-  { id: 'polyglot', name: 'Полиглот', desc: 'Попробуй 3+ навыка', icon: '🌍', check: (s) => s.skillsTried >= 3 },
-  { id: 'researcher', name: 'Исследователь', desc: 'Попробуй все навыки', icon: '🔬', check: (s) => s.skillsTried >= 20 },
-  { id: 'voice-marathon', name: 'Голосовой марафон', desc: '10 голосовых сообщений', icon: '🎙️', check: (s) => s.voiceMessages >= 10 },
-  { id: 'code-master', name: 'Код-мастер', desc: '50 запусков кода', icon: '⚡', check: (s) => s.codeRuns >= 50 },
-  { id: 'night-owl', name: 'Ночная сова', desc: 'Учиться после 23:00', icon: '🦉', check: (s) => s.nightStudy },
-  { id: 'early-bird', name: 'Ранняя пташка', desc: 'Учиться до 07:00', icon: '🐦', check: (s) => s.earlyStudy },
-  { id: 'exporter', name: 'Архивариус', desc: 'Экспортируй чат', icon: '📦', check: (s) => s.exports >= 1 },
-  { id: 'snippets', name: 'Коллекционер', desc: 'Сохрани 5 сниппетов', icon: '📌', check: (s) => s.snippetsSaved >= 5 },
-  { id: 'level-up', name: 'Первый рост', desc: 'Достигни 2 уровня', icon: '📈', check: (s) => s.level >= 2 },
+  { id: 'first-message', name: 'Первый шаг', desc: 'Отправь первое сообщение', icon: 'ach-first-step', check: (s) => s.totalMessages >= 1 },
+  { id: 'first-code', name: 'Кодер', desc: 'Запусти первый код', icon: 'ach-coder', check: (s) => s.codeRuns >= 1 },
+  { id: 'first-voice', name: 'Голос', desc: 'Отправь голосовое сообщение', icon: 'ach-voice', check: (s) => s.voiceMessages >= 1 },
+  { id: 'ten-messages', name: 'Болтун', desc: 'Отправь 10 сообщений', icon: 'ach-chatter', check: (s) => s.totalMessages >= 10 },
+  { id: 'hundred-messages', name: 'Сотня', desc: 'Отправь 100 сообщений', icon: 'ach-hundred', check: (s) => s.totalMessages >= 100 },
+  { id: 'five-hundred-xp', name: 'Марафонец', desc: 'Набери 500 XP', icon: 'ach-marathon', check: (s) => s.totalXP >= 500 },
+  { id: 'thousand-xp', name: 'Тысячник', desc: 'Набери 1000 XP', icon: 'ach-thousand', check: (s) => s.totalXP >= 1000 },
+  { id: 'polyglot', name: 'Полиглот', desc: 'Попробуй 3+ навыка', icon: 'ach-polyglot', check: (s) => s.skillsTried >= 3 },
+  { id: 'researcher', name: 'Исследователь', desc: 'Попробуй все навыки', icon: 'ach-researcher', check: (s) => s.skillsTried >= 20 },
+  { id: 'voice-marathon', name: 'Голосовой марафон', desc: '10 голосовых сообщений', icon: 'ach-voice-marathon', check: (s) => s.voiceMessages >= 10 },
+  { id: 'code-master', name: 'Код-мастер', desc: '50 запусков кода', icon: 'ach-code-master', check: (s) => s.codeRuns >= 50 },
+  { id: 'night-owl', name: 'Ночная сова', desc: 'Учиться после 23:00', icon: 'ach-night-owl', check: (s) => s.nightStudy },
+  { id: 'early-bird', name: 'Ранняя пташка', desc: 'Учиться до 07:00', icon: 'ach-early-bird', check: (s) => s.earlyStudy },
+  { id: 'exporter', name: 'Архивариус', desc: 'Экспортируй чат', icon: 'ach-exporter', check: (s) => s.exports >= 1 },
+  { id: 'snippets', name: 'Коллекционер', desc: 'Сохрани 5 сниппетов', icon: 'ach-snippets', check: (s) => s.snippetsSaved >= 5 },
+  { id: 'level-up', name: 'Первый рост', desc: 'Достигни 2 уровня', icon: 'ach-level-up', check: (s) => s.level >= 2 },
 ]
 
 const XP_ACTIONS = {
@@ -89,7 +89,7 @@ export const useProgress = () => {
     const currentMin = currentLevel.min
     const nextMin = nextLevel ? nextLevel.min : currentLevel.min + 1000
     const progress = nextLevel ? ((xp - currentMin) / (nextMin - currentMin)) * 100 : 100
-    return { level, ...currentLevel, progress, nextLevel }
+    return { level, ...currentLevel, iconName: currentLevel.icon, progress, nextLevel }
   }, [getLevel])
 
   const checkAchievements = useCallback((newStats) => {

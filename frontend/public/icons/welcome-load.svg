@@ -1,0 +1,7 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Spinner -->
+  <path d="M17 6C11.4772 6 7 10.4772 7 16C7 21.5228 11.4772 26 17 26C22.5228 26 27 21.5228 27 16" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round"/>
+  <path d="M27 16C27 13 25.5 10.5 23 9" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <!-- Center dot -->
+  <circle cx="17" cy="16" r="2" fill="#a78bfa"/>
+</svg>

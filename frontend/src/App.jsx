@@ -11,14 +11,15 @@ import ThemeSwitcher from './components/ThemeSwitcher'
 import SkillSelector, { SKILLS } from './components/SkillSelector'
 import AchievementToast from './components/AchievementToast'
 import StatsDashboard from './components/StatsDashboard'
+import Icon from './components/Icon'
 import useVoiceOutput from './hooks/useVoiceOutput'
 import useProgress from './hooks/useProgress'
 
 const MODES = [
-  { id: 'Обучение', icon: '📚', label: 'Обучение' },
-  { id: 'Дебаг', icon: '🐛', label: 'Дебаг' },
-  { id: 'Код-ревью', icon: '🔍', label: 'Код-ревью' },
-  { id: 'Практика', icon: '💻', label: 'Практика' },
+  { id: 'Обучение', icon: 'mode-learning', label: 'Обучение' },
+  { id: 'Дебаг', icon: 'mode-debug', label: 'Дебаг' },
+  { id: 'Код-ревью', icon: 'mode-review', label: 'Код-ревью' },
+  { id: 'Практика', icon: 'mode-practice', label: 'Практика' },
 ]
 
 function App() {
@@ -49,7 +50,7 @@ function App() {
   const { speak, stop, isSpeaking: isVoiceSpeaking, russianVoices } = useVoiceOutput(selectedVoice)
   const {
     stats, levelInfo, unlockedAchievements, lockedAchievements,
-    newAchievements, showAchievementToast,
+    showAchievementToast,
     recordMessage, recordCodeRun, recordVoiceMessage, recordSkill, recordExport, recordSnippetSave,
   } = useProgress()
 
@@ -108,7 +109,7 @@ function App() {
   const switchSession = (sid) => { setActiveSessionId(sid); loadSessionHistory(sid) }
 
   const createSession = (name) => {
-    fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${name} (${currentSkill.icon} ${currentSkill.label})` }) })
+    fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${name} (${currentSkill.label})` }) })
       .then((res) => res.json())
       .then((data) => { setSessions((p) => [data, ...p]); switchSession(data.id) })
       .catch(console.error)
@@ -238,8 +239,8 @@ function App() {
     if (!messages.length) return
     const as = sessions.find((s) => s.id === activeSessionId)
     const sn = as ? as.name : 'Чат'
-    const content = messages.map((m) => { const t = formatTime(m.timestamp); const r = m.role === 'user' ? '👤 Вы' : '🤖 Ментор'; return `### ${r} (${t})\n\n${m.content}\n` }).join('\n---\n\n')
-    const header = `# AI Mentor — ${sn}\n\n**Навык:** ${currentSkill.icon} ${currentSkill.label}\n**Режим:** ${mode}\n**Дата:** ${new Date().toLocaleString('ru-RU')}\n\n---\n\n`
+    const content = messages.map((m) => { const t = formatTime(m.timestamp); const r = m.role === 'user' ? 'Вы' : 'Ментор'; return `### ${r} (${t})\n\n${m.content}\n` }).join('\n---\n\n')
+    const header = `# AI Mentor — ${sn}\n\n**Навык:** ${currentSkill.label}\n**Режим:** ${mode}\n**Дата:** ${new Date().toLocaleString('ru-RU')}\n\n---\n\n`
     const blob = new Blob([header + content], { type: 'text/markdown;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = `ai-mentor-${sn}-${new Date().toISOString().slice(0, 10)}.md`
@@ -264,7 +265,7 @@ function App() {
   }
 
   if (!isLoaded) {
-    return <div className={`app-wrapper theme-${theme}`}><div className="welcome-screen"><div className="welcome-icon">🧠</div><div className="welcome-title">Загрузка...</div></div></div>
+    return <div className={`app-wrapper theme-${theme}`}><div className="welcome-screen"><div className="welcome-icon"><Icon name="welcome-load" size={70} /></div><div className="welcome-title">Загрузка...</div></div></div>
   }
 
   return (
@@ -273,13 +274,13 @@ function App() {
 
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="sidebar-logo">🧠</div>
+          <div className="sidebar-logo"><Icon name="logo" size={40} /></div>
           <span className="sidebar-title">AI Mentor</span>
         </div>
 
         <div className="progress-section" onClick={() => setShowStats(true)}>
           <div className="progress-level-badge">
-            <span className="progress-icon">{levelInfo.icon}</span>
+            <span className="progress-icon"><Icon name={levelInfo.iconName || 'level-newbie'} size={32} /></span>
             <div className="progress-info">
               <span className="progress-level-name">{levelInfo.name}</span>
               <span className="progress-level-num">Ур. {levelInfo.level}</span>
@@ -297,9 +298,13 @@ function App() {
           <div className="mode-label">Навык</div>
           <div className="skill-selector-compact">
             {SKILLS.map((s) => (
-              <button key={s.id} className={`skill-btn ${skill === s.id ? 'active' : ''}`} onClick={() => setSkill(s.id)} title={s.label}>{s.icon}</button>
+              <button key={s.id} className={`skill-btn ${skill === s.id ? 'active' : ''}`} onClick={() => setSkill(s.id)} title={s.label}>
+                <Icon name={s.icon} size={22} />
+              </button>
             ))}
-            <button className="skill-btn skill-reset-btn" onClick={() => { setSkill(''); setShowSkillPicker(true) }} title="Сменить навык">🔄</button>
+            <button className="skill-btn skill-reset-btn" onClick={() => { setSkill(''); setShowSkillPicker(true) }} title="Сменить навык">
+              <Icon name="skill-reset" size={22} />
+            </button>
           </div>
         </div>
 
@@ -308,7 +313,8 @@ function App() {
           <div className="mode-selector-modern">
             {MODES.map((m) => (
               <button key={m.id} className={`mode-btn ${mode === m.id ? 'active' : ''}`} onClick={() => setMode(m.id)}>
-                <span className="mode-icon">{m.icon}</span>{m.label}
+                <span className="mode-icon"><Icon name={m.icon} size={18} /></span>
+                {m.label}
               </button>
             ))}
           </div>
@@ -316,32 +322,32 @@ function App() {
 
         <div className="sidebar-tools">
           <button className={`tool-btn ${showCodeRunner ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowCodeRunner(!showCodeRunner); setShowSQLRunner(false) }}>
-            <span className="tool-icon">🐍</span> Python REPL
+            <span className="tool-icon"><Icon name="tool-python" size={18} /></span> Python REPL
           </button>
           <button className={`tool-btn ${showSQLRunner ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowSQLRunner(!showSQLRunner); setShowCodeRunner(false) }}>
-            <span className="tool-icon">🗄️</span> SQL REPL
+            <span className="tool-icon"><Icon name="tool-sql" size={18} /></span> SQL REPL
           </button>
           <button className={`tool-btn ${showSnippets ? 'tool-btn-active' : ''}`} onClick={() => setShowSnippets(!showSnippets)}>
-            <span className="tool-icon">📌</span> Сниппеты
+            <span className="tool-icon"><Icon name="tool-snippets" size={18} /></span> Сниппеты
           </button>
           {mode === 'Практика' && (
             <button className={`tool-btn ${showSolutionChecker ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowSolutionChecker(!showSolutionChecker) }}>
-              <span className="tool-icon">✅</span> Проверка
+              <span className="tool-icon"><Icon name="tool-checker" size={18} /></span> Проверка
             </button>
           )}
         </div>
 
         <div className="sidebar-footer">
           <ThemeSwitcher currentTheme={theme} onChange={setTheme} />
-          <button className="clear-btn" onClick={clearHistory}>🗑️ Очистить чат</button>
-          <button className="export-btn" onClick={exportChat} disabled={messages.length === 0}>📥 Экспорт</button>
+          <button className="clear-btn" onClick={clearHistory}><Icon name="delete" size={14} /> Очистить чат</button>
+          <button className="export-btn" onClick={exportChat} disabled={messages.length === 0}><Icon name="export" size={14} /> Экспорт</button>
         </div>
       </aside>
 
       <main className="main-content">
         <header className="chat-header">
           <div className="chat-header-title">
-            {currentSkill.icon} {currentSkill.label} — {MODES.find((m) => m.id === mode)?.label}
+            <Icon name={currentSkill.icon} size={18} /> {currentSkill.label} — {MODES.find((m) => m.id === mode)?.label}
             {sessions.find((s) => s.id === activeSessionId) && <span className="session-badge">{sessions.find((s) => s.id === activeSessionId)?.name}</span>}
           </div>
           <div className="chat-header-actions">
@@ -354,8 +360,8 @@ function App() {
                 <button className="voice-test-btn" onClick={() => speak && speak('Привет! Я ваш AI-ментор.')}>🔊 Тест</button>
               </div>
             )}
-            <button className="header-action-btn" onClick={() => setShowSearch(!showSearch)} title="Поиск (Ctrl+F)">🔍</button>
-            <div className="chat-header-status"><span className="status-dot"></span> Ollama</div>
+            <button className="header-action-btn" onClick={() => setShowSearch(!showSearch)} title="Поиск (Ctrl+F)"><Icon name="search" size={14} /></button>
+            <div className="chat-header-status"><Icon name="status-dot" size={8} /> Ollama</div>
           </div>
         </header>
 
@@ -368,7 +374,7 @@ function App() {
 
         {messages.length === 0 ? (
           <div className="welcome-screen">
-            <div className="welcome-icon">{currentSkill.icon}</div>
+            <div className="welcome-icon"><Icon name="welcome-rocket" size={70} /></div>
             <h2 className="welcome-title">{currentSkill.label}</h2>
             <p className="welcome-subtitle">Спроси что-нибудь или попроси ментора начать урок по {currentSkill.label.toLowerCase()}.</p>
             <div className="welcome-hints">
@@ -386,7 +392,7 @@ function App() {
           <div className="input-wrapper">
             <VoiceInput onTranscript={handleVoiceTranscript} disabled={isTyping} />
             <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} onPaste={handlePaste} placeholder="Напишите сообщение..." disabled={isTyping} rows={1} />
-            <button className="send-btn" onClick={sendMessage} disabled={isTyping || !input.trim()}>➤</button>
+            <button className="send-btn" onClick={sendMessage} disabled={isTyping || !input.trim()}><Icon name="send" size={20} /></button>
           </div>
         </div>
       </main>

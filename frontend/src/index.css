@@ -674,6 +674,11 @@ body {
   min-width: 0;
 }
 
+/* ===== ICON ===== */
+.icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.sidebar-logo { display: flex; align-items: center; justify-content: center; }
+.sidebar-logo .icon { border-radius: 10px; }
+
 /* ===== PROGRESS SECTION ===== */
 .progress-section {
   padding: 0.75rem;

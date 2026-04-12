@@ -1,0 +1,8 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Badge with book -->
+  <circle cx="17" cy="17" r="10" stroke="#c4b5fd" stroke-width="2"/>
+  <circle cx="17" cy="17" r="7" stroke="#a78bfa" stroke-width="1.5"/>
+  <!-- Book -->
+  <rect x="13" y="13" width="8" height="8" rx="1" stroke="#a78bfa" stroke-width="1.5"/>
+  <path d="M17 13V21" stroke="#a78bfa" stroke-width="1.5"/>
+</svg>

@@ -1,48 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import hljs from 'highlight.js'
-
-const CopyIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-)
-
-const SpeakerIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-  </svg>
-)
-
-const SendToEditorIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="16 18 22 12 16 6" />
-    <polyline points="8 6 2 12 8 18" />
-  </svg>
-)
-
-const RunIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-    <polygon points="5 3 19 12 5 21 5 3" />
-  </svg>
-)
-
-const SaveIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-    <polyline points="17 21 17 13 7 13 7 21" />
-    <polyline points="7 3 7 8 15 8" />
-  </svg>
-)
+import Icon from './Icon'
 
 const CodeBlock = ({ node, inline, className, children, onSendToEditor, onRunCode, onSaveSnippet, ...props }) => {
   const match = /language-(\w+)/.exec(className || '')
@@ -88,23 +47,23 @@ const CodeBlock = ({ node, inline, className, children, onSendToEditor, onRunCod
         <div className="code-block-actions">
           {language === 'python' && onRunCode && (
             <button className="copy-btn run-code-btn" onClick={handleRun} title="Запустить код">
-              <RunIcon />
+              <Icon name="run" size={12} />
               Запустить
             </button>
           )}
           {language === 'python' && onSendToEditor && (
             <button className="copy-btn" onClick={handleSendToEditor} title="Отправить в редактор">
-              <SendToEditorIcon />
+              <Icon name="send-to-editor" size={12} />
               В редактор
             </button>
           )}
           {language === 'python' && onSaveSnippet && (
             <button className="copy-btn" onClick={handleSaveSnippet} title="Сохранить в избранное">
-              <SaveIcon />
+              <Icon name="save" size={12} />
             </button>
           )}
           <button className="copy-btn" onClick={handleCopy} title="Копировать код">
-            {copied ? <CheckIcon /> : <CopyIcon />}
+            {copied ? <Icon name="check" size={12} /> : <Icon name="copy" size={12} />}
             {copied ? 'Скопировано!' : 'Копировать'}
           </button>
         </div>
@@ -179,7 +138,7 @@ const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor
       {messages.map((msg, index) => (
         <div key={index} className={`message-row ${msg.role}`}>
           <div className="message-avatar">
-            {msg.role === 'user' ? '👤' : '🤖'}
+            <Icon name={msg.role === 'user' ? 'avatar-user' : 'avatar-mentor'} size={20} />
           </div>
           <div className="message-content-wrapper">
             <div className="message-bubble">
@@ -208,7 +167,7 @@ const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor
                       }}
                       title="Озвучить ответ"
                     >
-                      <SpeakerIcon />
+                      <Icon name="speaker" size={14} />
                     </button>
                     {onSendToEditor && (
                       <button
@@ -222,7 +181,7 @@ const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor
                         }}
                         title="Отправить весь код в редактор"
                       >
-                        <SendToEditorIcon />
+                        <Icon name="send-to-editor" size={14} />
                       </button>
                     )}
                   </div>
@@ -239,7 +198,9 @@ const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor
       ))}
       {isTyping && (
         <div className="message-row assistant">
-          <div className="message-avatar">🤖</div>
+          <div className="message-avatar">
+            <Icon name="avatar-mentor" size={20} />
+          </div>
           <div className="message-content-wrapper">
             <div className="typing-indicator-modern">
               <div className="typing-dots">
@@ -247,7 +208,7 @@ const Chat = ({ messages, isTyping, formatTime, searchQuery = '', onSendToEditor
                 <div className="typing-dot"></div>
                 <div className="typing-dot"></div>
               </div>
-              <span style={{ color: '#a78bfa', fontSize: '0.875rem' }}>
+              <span style={{ color: 'var(--accent-light)', fontSize: '0.8125rem' }}>
                 Ментор думает...
               </span>
             </div>

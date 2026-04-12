@@ -1,0 +1,9 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular arrows -->
+  <path d="M9 17C9 12.5817 12.5817 9 17 9C21.4183 9 25 12.5817 25 17C25 21.4183 21.4183 25 17 25C14.5 25 12.3 23.8 11 22" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round"/>
+  <!-- Arrow heads -->
+  <path d="M9 17L7 15M9 17L11 15" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11 22L9 24M11 22L13 24" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Center dot -->
+  <circle cx="17" cy="17" r="2" stroke="#a78bfa" stroke-width="2"/>
+</svg>

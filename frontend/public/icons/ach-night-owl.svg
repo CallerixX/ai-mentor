@@ -1,0 +1,15 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Owl -->
+  <ellipse cx="17" cy="18" rx="8" ry="9" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Ears -->
+  <path d="M10 10L8 7M24 10L26 7" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round"/>
+  <!-- Eyes -->
+  <circle cx="13" cy="17" r="3" stroke="#a78bfa" stroke-width="2"/>
+  <circle cx="21" cy="17" r="3" stroke="#a78bfa" stroke-width="2"/>
+  <circle cx="13" cy="17" r="1.5" fill="#a78bfa"/>
+  <circle cx="21" cy="17" r="1.5" fill="#a78bfa"/>
+  <!-- Beak -->
+  <path d="M17 19L16 22L18 22L17 19Z" stroke="#c4b5fd" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Moon -->
+  <path d="M26 24C25 25 23 26 21 26C24 26 26 24 26 21C26 22.5 26 23 26 24Z" stroke="#a78bfa" stroke-width="1.5"/>
+</svg>
