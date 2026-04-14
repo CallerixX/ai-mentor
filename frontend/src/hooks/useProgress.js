@@ -237,6 +237,13 @@ export const useProgress = () => {
     addXP('snippetSave')
   }, [addXP, checkAchievements])
 
+  const resetProgress = useCallback(() => {
+    localStorage.removeItem('ai-mentor-progress')
+    setStats(getDefaultStats())
+    setNewAchievements([])
+    setShowAchievementToast(null)
+  }, [])
+
   const levelInfo = getLevelInfo(stats.totalXP)
   const unlockedAchievements = ACHIEVEMENTS.filter((a) => stats.achievements.includes(a.id))
   const lockedAchievements = ACHIEVEMENTS.filter((a) => !stats.achievements.includes(a.id))
@@ -255,6 +262,7 @@ export const useProgress = () => {
     recordSkill,
     recordExport,
     recordSnippetSave,
+    resetProgress,
   }
 }
 

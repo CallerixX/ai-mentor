@@ -1,18 +1,29 @@
 import React from 'react'
-import { MessageCircle, Code, Mic, Bookmark, Download, Target } from 'lucide-react'
+import { MessageCircle, Code, Mic, Bookmark, Download, Target, RotateCcw } from 'lucide-react'
 import { motion } from 'motion/react'
 import Icon from './Icon'
 import { SKILLS } from './SkillSelector'
 
-const StatsDashboard = ({ stats, levelInfo, unlockedAchievements, lockedAchievements, onClose }) => {
+const StatsDashboard = ({ stats, levelInfo, unlockedAchievements, lockedAchievements, onClose, onReset }) => {
   const triedSkills = stats.skillsList.map((id) => SKILLS.find((s) => s.id === id)).filter(Boolean)
+
+  const handleReset = () => {
+    if (window.confirm('Сбросить весь прогресс? Это действие нельзя отменить.')) {
+      onReset()
+    }
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="stats-overlay" onClick={onClose}>
       <motion.div initial={{ scale: 0.9, y: 20, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.9, y: 20, opacity: 0 }} transition={{ type: 'spring', stiffness: 100, damping: 20 }} className="stats-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="stats-header">
           <span className="stats-title">Статистика и достижения</span>
-          <motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.95 }} onClick={onClose} className="stats-close-btn">✕</motion.button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.95 }} onClick={handleReset} className="stats-close-btn" title="Сбросить прогресс" style={{ color: 'var(--error)' }}>
+              <RotateCcw size={16} />
+            </motion.button>
+            <motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.95 }} onClick={onClose} className="stats-close-btn">✕</motion.button>
+          </div>
         </div>
 
         <div className="stats-level-section">

@@ -19,11 +19,15 @@ const SQLRunner = ({ initialCode, onCodeRun }) => {
   useEffect(() => {
     const loadDuckDB = async () => {
       try {
-        const duckdbModule = await import('https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm')
-        const duckdb = await duckdbModule.createDuckDB()
-        await duckdb.instantiate()
-        const conn = await duckdb.connect()
-        setDuckdb(duckdb)
+        const duckdb = await import('https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-mvp.esm.js')
+        const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles()
+        const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES)
+        const worker_url = duckdb.getJsDelivrWorkerURL(bundle)
+        const worker = new Worker(worker_url)
+        const db = new duckdb.AsyncDuckDB(worker, window.location.href)
+        await db.instantiate(bundle.mainModule, bundle.pthreadWorker)
+        const conn = await db.connect()
+        setDuckdb(db)
         setConn(conn)
       } catch (err) {
         setError('Ошибка загрузки DuckDB: ' + err.message)

@@ -53,7 +53,7 @@ function App() {
   const { speak, stop, isSpeaking: isVoiceSpeaking, russianVoices } = useVoiceOutput(selectedVoice)
   const {
     stats, levelInfo, unlockedAchievements, lockedAchievements,
-    showAchievementToast,
+    showAchievementToast, resetProgress,
     recordMessage, recordCodeRun, recordVoiceMessage, recordSkill, recordExport, recordSnippetSave,
   } = useProgress()
 
@@ -432,7 +432,7 @@ function App() {
 
       {showSnippets && <SnippetsPanel isOpen={showSnippets} onClose={() => setShowSnippets(false)} />}
       {showSolutionChecker && <SolutionChecker isOpen={showSolutionChecker} onClose={() => setShowSolutionChecker(false)} initialCode={pendingCode} initialTask={pendingTask} />}
-      {showStats && <StatsDashboard stats={stats} levelInfo={levelInfo} unlockedAchievements={unlockedAchievements} lockedAchievements={lockedAchievements} onClose={() => setShowStats(false)} />}
+      {showStats && <StatsDashboard stats={stats} levelInfo={levelInfo} unlockedAchievements={unlockedAchievements} lockedAchievements={lockedAchievements} onClose={() => setShowStats(false)} onReset={resetProgress} />}
     </div>
   )
 }
