@@ -11,7 +11,7 @@ import ThemeSwitcher from './components/ThemeSwitcher'
 import SkillSelector, { SKILLS } from './components/SkillSelector'
 import AchievementToast from './components/AchievementToast'
 import StatsDashboard from './components/StatsDashboard'
-import { Search, Send, RotateCcw, Trash2, Download, Code, Database, Bookmark, CheckSquare, Book, Bug, CheckCircle, Laptop } from 'lucide-react'
+import { Search, Send, RotateCcw, Trash2, Download, Code, Database, Bookmark, CheckSquare, Book, Bug, CheckCircle, Laptop, Palette } from 'lucide-react'
 import { motion } from 'motion/react'
 import Icon from './components/Icon'
 import useVoiceOutput from './hooks/useVoiceOutput'
@@ -47,6 +47,7 @@ function App() {
   const [sessions, setSessions] = useState([])
   const [activeSessionId, setActiveSessionId] = useState(null)
   const [theme, setTheme] = useState(() => localStorage.getItem('ai-mentor-theme') || 'dark')
+  const [designStyle, setDesignStyle] = useState(() => localStorage.getItem('ai-mentor-design-style') || 'glass')
 
   const textareaRef = useRef(null)
   const { speak, stop, isSpeaking: isVoiceSpeaking, russianVoices } = useVoiceOutput(selectedVoice)
@@ -61,7 +62,9 @@ function App() {
   useEffect(() => {
     localStorage.setItem('ai-mentor-theme', theme)
     document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
+    document.documentElement.setAttribute('data-design-style', designStyle)
+    localStorage.setItem('ai-mentor-design-style', designStyle)
+  }, [theme, designStyle])
 
   useEffect(() => {
     if (selectedVoice) localStorage.setItem('ai-mentor-voice', selectedVoice)
@@ -260,18 +263,18 @@ function App() {
 
   if (showSkillPicker) {
     return (
-      <div className={`app-wrapper theme-${theme}`}>
+      <div className={`app-wrapper theme-${theme}`} data-design-style={designStyle}>
         <SkillSelector currentSkill={skill} onChange={setSkill} onConfirm={handleSkillConfirm} />
       </div>
     )
   }
 
   if (!isLoaded) {
-    return <div className={`app-wrapper theme-${theme}`}><div className="welcome-screen"><div className="welcome-icon"><Icon name="welcome-load" size={70} /></div><div className="welcome-title">Загрузка...</div></div></div>
+    return <div className={`app-wrapper theme-${theme}`} data-design-style={designStyle}><div className="welcome-screen"><div className="welcome-icon"><Icon name="welcome-load" size={70} /></div><div className="welcome-title">Загрузка...</div></div></div>
   }
 
   return (
-    <div className={`app-wrapper theme-${theme} ${showCodeRunner || showSQLRunner ? 'with-code-runner' : ''} ${showSnippets ? 'with-snippets' : ''} ${showSolutionChecker ? 'with-solution-checker' : ''}`}>
+    <div className={`app-wrapper theme-${theme} ${showCodeRunner || showSQLRunner ? 'with-code-runner' : ''} ${showSnippets ? 'with-snippets' : ''} ${showSolutionChecker ? 'with-solution-checker' : ''}`} data-design-style={designStyle}>
       <AchievementToast achievement={showAchievementToast} onClose={() => showAchievementToast && setShowAchievementToast(null)} />
 
       <aside className="sidebar">
@@ -340,6 +343,12 @@ function App() {
         </div>
 
         <div className="sidebar-footer">
+          <div className="style-switcher">
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className={`style-btn ${designStyle === 'glass' ? 'active' : ''}`} onClick={() => setDesignStyle(designStyle === 'glass' ? 'brutalist' : 'glass')} title="Переключить стиль">
+              <Palette size={14} />
+              <span>{designStyle === 'glass' ? 'Glass' : 'Brutal'}</span>
+            </motion.button>
+          </div>
           <ThemeSwitcher currentTheme={theme} onChange={setTheme} />
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="clear-btn" onClick={clearHistory}>
             <Trash2 size={14} /> Очистить чат
