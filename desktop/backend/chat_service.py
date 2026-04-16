@@ -139,7 +139,7 @@ class OllamaService:
             },
         }
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as client:
             async with client.stream(
                 "POST",
                 f"{target_url}/api/chat",
