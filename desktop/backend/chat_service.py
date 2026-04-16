@@ -107,12 +107,13 @@ def build_system_prompt(mode: str, skill: str) -> str:
 
 class OllamaService:
     def __init__(self):
-        self.base_url = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+        self.base_url = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
+        self.cloud_url = os.getenv("OLLAMA_CLOUD_HOST", "http://localhost:11434")
         self.model = os.getenv("MODEL_NAME", "qwen2.5-coder:7b")
         self.timeout = 120.0
 
     async def stream_chat(
-        self, messages: List[Dict[str, str]], mode: str = "Обучение", skill: str = "Python"
+        self, messages: List[Dict[str, str]], mode: str = "Обучение", skill: str = "Python", model: str = None
     ) -> AsyncGenerator[str, None]:
         system_content = build_system_prompt(mode, skill)
         system_message = {
@@ -121,8 +122,15 @@ class OllamaService:
         }
         full_messages = [system_message] + messages
 
+        target_model = model if model else self.model
+        target_url = self.base_url
+
+        if target_model.endswith(":cloud"):
+            target_model = target_model.replace(":cloud", "")
+            target_url = self.cloud_url
+
         payload = {
-            "model": self.model,
+            "model": target_model,
             "messages": full_messages,
             "stream": True,
             "options": {
@@ -131,10 +139,10 @@ class OllamaService:
             },
         }
 
-        async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as client:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             async with client.stream(
                 "POST",
-                f"{self.base_url}/api/chat",
+                f"{target_url}/api/chat",
                 json=payload,
                 headers={"Content-Type": "application/json"},
             ) as response:

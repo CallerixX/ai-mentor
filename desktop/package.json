@@ -1,6 +1,6 @@
 {
   "name": "ai-mentor-desktop",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AI Mentor — Локальный AI-наставник по программированию",
   "main": "main.js",
   "scripts": {
