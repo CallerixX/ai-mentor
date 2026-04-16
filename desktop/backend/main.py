@@ -90,6 +90,7 @@ class FeedbackRequest(BaseModel):
     message: str
     context: List[Dict[str, Any]] = []
     system_info: Dict[str, Any] = {}
+    logs: Optional[str] = None
 
 
 async def get_default_session_id() -> int:
@@ -266,14 +267,29 @@ async def health():
 @app.post("/api/feedback")
 async def submit_feedback(feedback: FeedbackRequest):
     gas_url = os.getenv("GOOGLE_APPS_SCRIPT_URL", "https://script.google.com/macros/s/AKfycbwgza3Zj44HE4Vsq1gwQgdHm43bd5d9upBqfTX1UcQHP7VwtIFWL_SV7afATSYqBATU/exec")
-    
-    text = f"🚨 **Новый Баг-репорт AI Mentor**\n\n"
-    text += f"**Описание:** {feedback.message}\n\n"
-    text += f"**Контекст (последние сообщения):**\n"
-    for msg in feedback.context[-5:]:
-        text += f"- {msg.get('role', 'unknown')}: {msg.get('content', '')[:100]}...\n"
-    
-    text += f"\n**Система:**\n{json.dumps(feedback.system_info, indent=2, ensure_ascii=False)}"
+
+    # Формируем краткое сообщение — только самое важное
+    si = feedback.system_info
+    text = "[AI Mentor] Bug Report\n"
+    text += f"Описание: {feedback.message}\n"
+    text += f"Навык: {si.get('skill', '?')} | Режим: {si.get('mode', '?')} | Модель: {si.get('model', '?')}\n"
+    text += f"Electron: {si.get('isElectron', False)} | ОС: {si.get('platform', '?')} | RAM: {si.get('totalRAM', '?')}\n"
+    text += f"Ollama: {'✓' if si.get('ollamaAvailable') else '✗'} | Backend: {'✓' if si.get('backendAvailable') else '✗'}\n"
+    if feedback.context:
+        text += f"Последнее сообщение: {feedback.context[-1].get('content', '')[:120]}"
+
+    # Собираем полный лог для .txt файла
+    log_content = "=== AI MENTOR BUG REPORT ===\n"
+    log_content += f"Описание: {feedback.message}\n\n"
+    log_content += f"=== SYSTEM INFO ===\n{json.dumps(feedback.system_info, indent=2, ensure_ascii=False)}\n\n"
+    log_content += "=== CHAT CONTEXT ===\n"
+    for msg in feedback.context:
+        role = msg.get('role', 'unknown')
+        content = msg.get('content', '')
+        log_content += f"[{role.upper()}]\n{content}\n\n"
+    if feedback.logs:
+        log_content += "=== APPLICATION LOGS ===\n"
+        log_content += feedback.logs
 
     if not gas_url:
         try:
@@ -283,11 +299,12 @@ async def submit_feedback(feedback: FeedbackRequest):
         return {"status": "printed_to_console_only"}
 
     try:
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as client:
             resp = await client.post(
                 gas_url,
                 json={
-                    "text": text
+                    "text": text,
+                    "logs": log_content
                 }
             )
             resp.raise_for_status()

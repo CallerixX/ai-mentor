@@ -2,6 +2,16 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+// addLog будет инициализирован снаружи через setter
+let _addLog = null;
+
+module.exports.setLogger = (fn) => { _addLog = fn; };
+
+function log(level, msg) {
+  if (_addLog) _addLog('BACKEND', level, msg);
+  else console.log(`[BACKEND][${level}] ${msg}`);
+}
+
 class BackendStarter {
   constructor(backendPath) {
     this.backendPath = backendPath;
@@ -66,20 +76,22 @@ class BackendStarter {
     });
 
     this.process.stdout.on('data', (data) => {
-      console.log(`[Backend] ${data.toString().trim()}`);
+      const msg = data.toString().trim();
+      log('INFO', msg);
     });
 
     this.process.stderr.on('data', (data) => {
-      console.error(`[Backend Error] ${data.toString().trim()}`);
+      const msg = data.toString().trim();
+      log('ERROR', msg);
     });
 
     this.process.on('error', (error) => {
-      console.error('Ошибка запуска бэкенда:', error);
+      log('ERROR', `Ошибка запуска бэкенда: ${error.message}`);
       this.isRunning = false;
     });
 
     this.process.on('exit', (code) => {
-      console.log(`Бэкенд завершился с кодом: ${code}`);
+      log('INFO', `Бэкенд завершился с кодом: ${code}`);
       this.isRunning = false;
     });
 

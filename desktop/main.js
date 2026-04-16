@@ -1,8 +1,27 @@
 const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, dialog } = require('electron');
 const path = require('path');
+const os = require('os');
 const { autoUpdater } = require('electron-updater');
 const OllamaManager = require('./ollama-manager');
 const BackendStarter = require('./backend-starter');
+
+// ───────────── Глобальный буфер логов ─────────────
+const MAX_LOGS = 500;
+const appLogs = [];
+
+function addLog(source, level, message) {
+  const timestamp = new Date().toISOString();
+  const entry = `[${timestamp}] [${source}] [${level}] ${message}`;
+  appLogs.push(entry);
+  if (appLogs.length > MAX_LOGS) appLogs.shift();
+  // Дублируем в консоль тоже
+  if (level === 'ERROR') {
+    console.error(entry);
+  } else {
+    console.log(entry);
+  }
+}
+// ──────────────────────────────────────────────────
 
 // Глобальные переменные
 let mainWindow = null;
@@ -269,6 +288,10 @@ async function initializeApp() {
   // Инициализируем менеджеры
   ollamaManager = new OllamaManager();
   backendStarter = new BackendStarter(BACKEND_PATH);
+  // Подключаем глобальный логгер к стартеру бэкенда
+  const BackendStarterModule = require('./backend-starter');
+  if (BackendStarterModule.setLogger) BackendStarterModule.setLogger(addLog);
+  addLog('ELECTRON', 'INFO', 'Приложение запущено, логирование активно');
 
   // Убеждаемся что Ollama запущен (ждем максимум 3 секунды, чтобы не блокировать UI)
   try {
@@ -605,6 +628,25 @@ ipcMain.handle('get-backend-url', () => {
 
 ipcMain.handle('is-setup-complete', () => {
   return isSetupComplete;
+});
+
+// Передаём накопленные логи в рендерер при отправке баг-репорта
+ipcMain.handle('get-logs', () => {
+  return appLogs.join('\n');
+});
+
+// Передаём системную информацию (RAM, платформа) для баг-репортов
+ipcMain.handle('get-system-info', () => {
+  const totalRAM = Math.round(os.totalmem() / 1024 / 1024 / 1024 * 10) / 10;
+  const freeRAM  = Math.round(os.freemem()  / 1024 / 1024 / 1024 * 10) / 10;
+  return {
+    platform: `${os.platform()} ${os.release()}`,
+    arch: os.arch(),
+    totalRAM: `${totalRAM} GB`,
+    freeRAM:  `${freeRAM} GB`,
+    cpuModel: os.cpus()[0]?.model || 'unknown',
+    appVersion: app.getVersion(),
+  };
 });
 
 // Обработчики событий приложения

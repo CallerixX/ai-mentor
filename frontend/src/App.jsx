@@ -61,6 +61,9 @@ function App() {
   const [feedbackText, setFeedbackText] = useState('')
   const [feedbackStatus, setFeedbackStatus] = useState('')
 
+  // Очередь ошибок фронтенда для баг-репортов
+  const frontendErrorsRef = useRef([])
+
   const textareaRef = useRef(null)
   const { speak, stop, isSpeaking: isVoiceSpeaking, russianVoices } = useVoiceOutput(selectedVoice)
   const {
@@ -90,6 +93,28 @@ function App() {
   useEffect(() => {
     localStorage.setItem('ai-mentor-mode', mode)
   }, [mode])
+
+  // Перехватываем console.error и console.warn для автосбора ошибок фронтенда
+  useEffect(() => {
+    const origError = console.error.bind(console)
+    const origWarn  = console.warn.bind(console)
+    console.error = (...args) => {
+      const msg = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+      frontendErrorsRef.current.push(`[${new Date().toISOString()}] [REACT][ERROR] ${msg}`)
+      if (frontendErrorsRef.current.length > 200) frontendErrorsRef.current.shift()
+      origError(...args)
+    }
+    console.warn = (...args) => {
+      const msg = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+      frontendErrorsRef.current.push(`[${new Date().toISOString()}] [REACT][WARN] ${msg}`)
+      if (frontendErrorsRef.current.length > 200) frontendErrorsRef.current.shift()
+      origWarn(...args)
+    }
+    return () => {
+      console.error = origError
+      console.warn  = origWarn
+    }
+  }, [])
 
   useEffect(() => {
     if (skill) {
@@ -269,14 +294,51 @@ function App() {
     if (!feedbackText.trim()) return
     setFeedbackStatus('sending')
     try {
+      const isElectron = typeof window.electronAPI !== 'undefined'
+
+      // Собираем логи и системную информацию
+      let electronLogs = ''
+      let sysInfo = {}
+      if (isElectron) {
+        try { electronLogs = await window.electronAPI.getLogs() || '' } catch (_) {}
+        try { sysInfo = await window.electronAPI.getSystemInfo() || {} } catch (_) {}
+      }
+
+      // Проверяем доступность Ollama и бэкенда
+      let ollamaAvailable = false
+      let backendAvailable = false
+      try {
+        const ollamaResp = await fetch('http://127.0.0.1:11434', { signal: AbortSignal.timeout(2000) })
+        ollamaAvailable = ollamaResp.ok
+      } catch (_) {}
+      try {
+        const backendResp = await fetch(`${window.BACKEND_URL || 'http://localhost:8000'}/api/health`, { signal: AbortSignal.timeout(2000) })
+        backendAvailable = backendResp.ok
+      } catch (_) {}
+
+      // Сбор полного лога
+      const frontendLogs = frontendErrorsRef.current.join('\n')
+      const logs = [
+        electronLogs ? `=== ELECTRON / BACKEND LOGS ===\n${electronLogs}` : '',
+        frontendLogs ? `=== FRONTEND (React) ERRORS ===\n${frontendLogs}` : '',
+      ].filter(Boolean).join('\n\n')
+
       await api.post('/api/feedback', {
         message: feedbackText,
-        context: messages.slice(-10).map((m) => ({role: m.role, content: m.content})),
+        context: messages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
         system_info: {
           userAgent: navigator.userAgent,
           skill, mode, model: selectedModel,
-          isElectron: window.electronAPI !== undefined
-        }
+          isElectron,
+          ollamaAvailable,
+          backendAvailable,
+          platform: sysInfo.platform || navigator.platform,
+          totalRAM: sysInfo.totalRAM || 'n/a',
+          freeRAM: sysInfo.freeRAM || 'n/a',
+          cpuModel: sysInfo.cpuModel || 'n/a',
+          appVersion: sysInfo.appVersion || 'web',
+        },
+        logs: logs || null,
       })
       setFeedbackStatus('success')
       setTimeout(() => { setShowFeedbackModal(false); setFeedbackStatus(''); setFeedbackText('') }, 2000)
