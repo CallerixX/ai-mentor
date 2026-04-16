@@ -1,0 +1,14 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Elephant -->
+  <ellipse cx="19" cy="19" rx="7" ry="6" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Head -->
+  <circle cx="13" cy="15" r="4" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Trunk -->
+  <path d="M10 16C10 16 8 17 8 19C8 21 9 22 10 23" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <!-- Ear -->
+  <path d="M13 11C13 11 15 9 17 10" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round"/>
+  <!-- Eye -->
+  <circle cx="14" cy="15" r="1" fill="#a78bfa"/>
+  <!-- Legs -->
+  <path d="M15 24V27M19 25V28M23 24V27" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round"/>
+</svg>

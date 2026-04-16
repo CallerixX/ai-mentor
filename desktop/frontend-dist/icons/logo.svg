@@ -1,0 +1,7 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brain with gear - AI Mentor -->
+  <path d="M20 6C15.5817 6 12 9.58172 12 14C12 14.5 12.05 15 12.15 15.48C10.88 16.19 10 17.5 10 19C10 20.1 10.45 21.1 11.17 21.83C10.45 22.56 10 23.56 10 24.67C10 26.51 11.24 28.08 13 28.66V30C13 32.21 14.79 34 17 34H23C25.21 34 27 32.21 27 30V28.66C28.76 28.08 30 26.51 30 24.67C30 23.56 29.55 22.56 28.83 21.83C29.55 21.1 30 20.1 30 19C30 17.5 29.12 16.19 27.85 15.48C27.95 15 28 14.5 28 14C28 9.58172 24.4183 6 20 6Z" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Gear inside brain -->
+  <circle cx="20" cy="19" r="4" stroke="#a78bfa" stroke-width="2"/>
+  <path d="M20 14V15M20 23V24M25 19H24M16 19H15M23.5 15.5L22.8 16.2M17.2 21.8L16.5 22.5M23.5 22.5L22.8 21.8M17.2 16.2L16.5 15.5" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+</svg>

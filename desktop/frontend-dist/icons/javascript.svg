@@ -1,0 +1,7 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- JS curly braces -->
+  <path d="M13 7C11 7 9 8 9 10V13C9 15 7 16 5 16M13 27C11 27 9 26 9 24V21C9 19 7 18 5 18" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round"/>
+  <path d="M21 7C23 7 25 8 25 10V13C25 15 27 16 29 16M21 27C23 27 25 26 25 24V21C25 19 27 18 29 18" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <!-- JS letters -->
+  <text x="11" y="21" font-family="monospace" font-size="10" fill="#c4b5fd" font-weight="bold">JS</text>
+</svg>

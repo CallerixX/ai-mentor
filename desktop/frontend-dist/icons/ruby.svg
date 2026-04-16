@@ -1,0 +1,6 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ruby crystal -->
+  <path d="M17 6L9 12L7 20L17 28L27 20L25 12L17 6Z" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M17 6L17 28M9 12L25 12M7 20H27" stroke="#a78bfa" stroke-width="2"/>
+  <path d="M9 12L17 20L25 12" stroke="#a78bfa" stroke-width="1.5"/>
+</svg>

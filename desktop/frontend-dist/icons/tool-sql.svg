@@ -1,0 +1,9 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Terminal window -->
+  <rect x="5" y="8" width="24" height="18" rx="2" stroke="#c4b5fd" stroke-width="2"/>
+  <path d="M5 13H29" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Database icon in terminal -->
+  <ellipse cx="17" cy="17" rx="5" ry="2" stroke="#a78bfa" stroke-width="1.5"/>
+  <path d="M12 17V21C12 22.1046 14.2386 23 17 23C19.7614 23 22 22.1046 22 21V17" stroke="#a78bfa" stroke-width="1.5"/>
+  <path d="M12 19C12 20.1046 14.2386 21 17 21C19.7614 21 22 20.1046 22 19" stroke="#a78bfa" stroke-width="1.5"/>
+</svg>

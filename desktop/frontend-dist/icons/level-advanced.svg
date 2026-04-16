@@ -1,0 +1,7 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield with upward arrow -->
+  <path d="M17 6L26 9V16C26 22 17 27 17 27C17 27 8 22 8 16V9L17 6Z" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Rocket/Arrow up -->
+  <path d="M17 11V20M17 11L14 14M17 11L20 14" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="17" cy="13" r="1" fill="#a78bfa"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Upward stairs/levels -->
+  <path d="M6 26H11V21H16V16H21V11H26V6" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Arrow up -->
+  <path d="M26 6L26 12M26 6L23 9M26 6L29 9" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Star at top -->
+  <path d="M26 3L27 5L29 6L27 7L26 9L25 7L23 6L25 5L26 3Z" fill="#a78bfa"/>
+</svg>

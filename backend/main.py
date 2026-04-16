@@ -6,7 +6,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
+import httpx
 from chat_service import OllamaService
 
 DB_PATH = os.getenv("DB_PATH", "/app/data/mentor.db")
@@ -68,6 +69,7 @@ class ChatRequest(BaseModel):
     mode: str = "Обучение"
     session_id: Optional[int] = None
     skill: Optional[str] = None
+    model: Optional[str] = None
 
 
 class SessionCreate(BaseModel):
@@ -82,6 +84,12 @@ class SolutionCheck(BaseModel):
     task: str
     code: str
     explanation: str
+    model: Optional[str] = None
+
+class FeedbackRequest(BaseModel):
+    message: str
+    context: List[Dict[str, Any]] = []
+    system_info: Dict[str, Any] = {}
 
 
 async def get_default_session_id() -> int:
@@ -195,7 +203,7 @@ async def chat(request: ChatRequest):
         full_response = ""
         skill_name = request.skill or "Python"
         try:
-            async for chunk in ollama.stream_chat(messages_for_ollama, request.mode, skill_name):
+            async for chunk in ollama.stream_chat(messages_for_ollama, request.mode, skill_name, request.model):
                 full_response += chunk
                 data = json.dumps({"content": chunk, "done": False})
                 yield f"data: {data}\n\n"
@@ -238,7 +246,7 @@ async def check_solution(body: SolutionCheck):
     async def event_stream():
         full_response = ""
         try:
-            async for chunk in ollama.stream_chat(messages_for_ollama, "Практика"):
+            async for chunk in ollama.stream_chat(messages_for_ollama, "Практика", model=body.model):
                 full_response += chunk
                 data = json.dumps({"content": chunk, "done": False})
                 yield f"data: {data}\n\n"
@@ -254,6 +262,36 @@ async def check_solution(body: SolutionCheck):
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+@app.post("/api/feedback")
+async def submit_feedback(feedback: FeedbackRequest):
+    gas_url = os.getenv("GOOGLE_APPS_SCRIPT_URL")
+    
+    text = f"🚨 **Новый Баг-репорт AI Mentor**\n\n"
+    text += f"**Описание:** {feedback.message}\n\n"
+    text += f"**Контекст (последние сообщения):**\n"
+    for msg in feedback.context[-5:]:
+        text += f"- {msg.get('role', 'unknown')}: {msg.get('content', '')[:100]}...\n"
+    
+    text += f"\n**Система:**\n{json.dumps(feedback.system_info, indent=2, ensure_ascii=False)}"
+
+    if not gas_url:
+        print(f"WEBHOOK НЕ НАСТРОЕН. Отчет:\n{text}")
+        return {"status": "printed_to_console_only"}
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            resp = await client.post(
+                gas_url,
+                json={
+                    "text": text
+                }
+            )
+            resp.raise_for_status()
+        return {"status": "sent"}
+    except Exception as e:
+        print(f"Ошибка отправки в Webhook: {e}")
+        return {"status": "error", "message": str(e)}
 
 
 if __name__ == "__main__":

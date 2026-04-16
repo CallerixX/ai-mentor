@@ -1,0 +1,12 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bug -->
+  <ellipse cx="17" cy="18" rx="6" ry="7" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Head -->
+  <circle cx="17" cy="11" r="3" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Antennae -->
+  <path d="M14 9L12 6M20 9L22 6" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <!-- Legs -->
+  <path d="M11 15H7M11 18H6M11 21H7M23 15H27M23 18H28M23 21H27" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <!-- Stripes -->
+  <path d="M11 18H23M11 21H23" stroke="#a78bfa" stroke-width="1.5"/>
+</svg>

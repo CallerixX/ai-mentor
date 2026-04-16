@@ -1,6 +1,8 @@
 import React from 'react'
 import { GraduationCap } from 'lucide-react'
 
+const basePath = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+
 const SKILLS = [
   { id: 'python', icon: 'python', label: 'Python', desc: 'Основы, ООП, алгоритмы' },
   { id: 'javascript', icon: 'javascript', label: 'JavaScript', desc: 'ES6+, Node.js, DOM' },
@@ -48,7 +50,7 @@ const SkillSelector = ({ currentSkill, onChange, onConfirm }) => {
               onClick={() => setSelected(s.id)}
             >
               <span className="skill-card-icon">
-                <img src={`/icons/${s.icon}.svg`} alt={s.label} width={34} height={34} />
+                <img src={`${basePath}/icons/${s.icon}.svg`} alt={s.label} width={34} height={34} />
               </span>
               <span className="skill-card-label">{s.label}</span>
               <span className="skill-card-desc">{s.desc}</span>

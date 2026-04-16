@@ -1,0 +1,10 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield with crown -->
+  <path d="M17 6L26 9V16C26 22 17 27 17 27C17 27 8 22 8 16V9L17 6Z" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Crown -->
+  <path d="M12 13L14 17H20L22 13L20 15L17 11L14 15L12 13Z" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M14 17V19H20V17" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="14" cy="15" r="0.5" fill="#a78bfa"/>
+  <circle cx="17" cy="11" r="0.5" fill="#a78bfa"/>
+  <circle cx="20" cy="15" r="0.5" fill="#a78bfa"/>
+</svg>

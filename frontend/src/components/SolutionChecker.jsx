@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
+import { api } from '../api'
 
-const SolutionChecker = ({ isOpen, onClose, initialCode = '', initialTask = '' }) => {
+const SolutionChecker = ({ isOpen, onClose, initialCode = '', initialTask = '', model }) => {
   const [task, setTask] = useState(initialTask)
   const [code, setCode] = useState(initialCode)
   const [explanation, setExplanation] = useState('')
@@ -15,41 +16,19 @@ const SolutionChecker = ({ isOpen, onClose, initialCode = '', initialTask = '' }
     setResult('')
 
     try {
-      const response = await fetch('/api/check-solution', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          task: task || 'Решить задачу на Python',
-          code,
-          explanation,
-        }),
-      })
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
       let fullResult = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6))
-              if (data.content && !data.done) {
-                fullResult += data.content
-                setResult(fullResult)
-              }
-            } catch {
-              // skip
-            }
-          }
+      
+      await api.sse('/api/check-solution', {
+        task: task || 'Решить задачу на Python',
+        code,
+        explanation,
+        model,
+      }, (data) => {
+        if (data.content && !data.done) {
+          fullResult += data.content
+          setResult(fullResult)
         }
-      }
+      })
     } catch (err) {
       setResult('Ошибка: ' + err.message)
     } finally {

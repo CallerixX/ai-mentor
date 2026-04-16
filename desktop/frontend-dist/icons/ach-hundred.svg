@@ -1,0 +1,6 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 100 number -->
+  <text x="5" y="23" font-family="monospace" font-size="16" fill="none" stroke="#c4b5fd" stroke-width="1.5" font-weight="bold">100</text>
+  <!-- Star -->
+  <path d="M27 8L28 11L31 12L28 13L27 16L26 13L23 12L26 11L27 8Z" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>

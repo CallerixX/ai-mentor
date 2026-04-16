@@ -1,0 +1,6 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Green status dot -->
+  <circle cx="17" cy="17" r="6" fill="#c4b5fd"/>
+  <circle cx="17" cy="17" r="4" fill="#a78bfa"/>
+  <circle cx="17" cy="17" r="8" stroke="#c4b5fd" stroke-width="1.5" opacity="0.3"/>
+</svg>

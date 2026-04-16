@@ -1,0 +1,8 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Document with bookmark/pin -->
+  <rect x="9" y="6" width="16" height="22" rx="2" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Bookmark tab -->
+  <path d="M19 6V12L17 10L15 12V6" stroke="#a78bfa" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Lines of text -->
+  <path d="M13 16H21M13 19H19M13 22H21" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

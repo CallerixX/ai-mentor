@@ -1,0 +1,11 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Container/Rocket hybrid -->
+  <rect x="10" y="14" width="14" height="12" rx="1" stroke="#c4b5fd" stroke-width="2"/>
+  <!-- Stack lines -->
+  <path d="M12 18H22M12 21H22" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Rocket top -->
+  <path d="M17 14V8L14 11M17 8L20 11" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="17" cy="10" r="1" fill="#a78bfa"/>
+  <!-- Flames -->
+  <path d="M13 26C13 26 13 28 14 28C15 28 15 27 15 27M17 26C17 26 17 28 17 28M19 26C19 26 19 28 20 28C21 28 21 27 21 27" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,7 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hexagon badge with gear -->
+  <path d="M17 6L25 10.5V19.5L17 24L9 19.5V10.5L17 6Z" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Gear -->
+  <circle cx="17" cy="15" r="4" stroke="#a78bfa" stroke-width="2"/>
+  <path d="M17 10V11.5M17 18.5V20M21.5 15H20M14 15H12.5M20 12L19.2 12.8M14.8 17.2L14 18M20 18L19.2 17.2M14.8 12.8L14 12" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

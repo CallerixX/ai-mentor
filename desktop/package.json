@@ -1,0 +1,90 @@
+{
+  "name": "ai-mentor-desktop",
+  "version": "1.0.1",
+  "description": "AI Mentor — Локальный AI-наставник по программированию",
+  "main": "main.js",
+  "scripts": {
+    "dev": "electron . --dev",
+    "build": "node scripts/build-frontend.js",
+    "build:win": "npm run build && electron-builder --win --x64",
+    "icons": "cd resources && python generate_icons.py && cd ..",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "ai",
+    "mentor",
+    "coding",
+    "education"
+  ],
+  "author": "AI Mentor Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "axios": "^1.6.5",
+    "electron-updater": "^6.1.7"
+  },
+  "build": {
+    "appId": "com.ai-mentor.desktop",
+    "productName": "AI Mentor",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "CallerixX",
+        "repo": "ai-mentor",
+        "releaseType": "release"
+      }
+    ],
+    "toolsets": {
+      "winCodeSign": "1.1.0"
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AI Mentor",
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico",
+      "installerHeaderIcon": "resources/icon.ico",
+      "license": "resources/license.txt",
+      "include": "resources/installer.nsh"
+    },
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "resources",
+        "to": "resources",
+        "filter": [
+          "icon.png",
+          "icon.ico",
+          "icon.svg"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Running person -->
+  <circle cx="18" cy="9" r="3" stroke="#c4b5fd" stroke-width="2"/>
+  <path d="M18 12L18 18L14 22" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M18 18L22 22" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round"/>
+  <path d="M18 15L24 13" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <path d="M18 15L13 17" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <!-- Speed lines -->
+  <path d="M6 14H10M8 17H11M6 20H9" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

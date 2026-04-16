@@ -1,0 +1,7 @@
+<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Document -->
+  <path d="M10 6H18L24 12V26C24 27.1046 23.1046 28 22 28H10C8.89543 28 8 27.1046 8 26V8C8 6.89543 8.89543 6 10 6Z" stroke="#c4b5fd" stroke-width="2"/>
+  <path d="M18 6V12H24" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Arrow down -->
+  <path d="M16 14V22M16 22L13 19M16 22L19 19" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -16,12 +16,20 @@ import { motion } from 'motion/react'
 import Icon from './components/Icon'
 import useVoiceOutput from './hooks/useVoiceOutput'
 import useProgress from './hooks/useProgress'
+import { api } from './api'
 
 const MODES = [
   { id: 'Обучение', icon: Book, label: 'Обучение' },
   { id: 'Дебаг', icon: Bug, label: 'Дебаг' },
   { id: 'Код-ревью', icon: CheckCircle, label: 'Код-ревью' },
   { id: 'Практика', icon: Laptop, label: 'Практика' },
+]
+
+const AVAILABLE_MODELS = [
+  { id: 'qwen2.5-coder:7b', label: 'Локальная (Qwen)' },
+  { id: 'Kimi-k2.5:cloud', label: 'Облачная (Kimi)' },
+  { id: 'glm-5:cloud', label: 'Облачная (GLM-5)' },
+  { id: 'qwen3.5:397b-cloud', label: 'Облачная (Qwen-3.5 Max)' }
 ]
 
 function App() {
@@ -48,6 +56,10 @@ function App() {
   const [activeSessionId, setActiveSessionId] = useState(null)
   const [theme, setTheme] = useState(() => localStorage.getItem('ai-mentor-theme') || 'dark')
   const [designStyle, setDesignStyle] = useState(() => localStorage.getItem('ai-mentor-design-style') || 'glass')
+  const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('ai-mentor-model') || 'qwen2.5-coder:7b')
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackStatus, setFeedbackStatus] = useState('')
 
   const textareaRef = useRef(null)
   const { speak, stop, isSpeaking: isVoiceSpeaking, russianVoices } = useVoiceOutput(selectedVoice)
@@ -67,6 +79,10 @@ function App() {
   }, [theme, designStyle])
 
   useEffect(() => {
+    localStorage.setItem('ai-mentor-model', selectedModel)
+  }, [selectedModel])
+
+  useEffect(() => {
     if (selectedVoice) localStorage.setItem('ai-mentor-voice', selectedVoice)
     else localStorage.removeItem('ai-mentor-voice')
   }, [selectedVoice])
@@ -83,7 +99,7 @@ function App() {
   }, [skill, recordSkill])
 
   useEffect(() => {
-    fetch('/api/sessions')
+    api.get('/api/sessions')
       .then((res) => res.json())
       .then((data) => {
         if (data.sessions?.length > 0) {
@@ -102,7 +118,7 @@ function App() {
   }, [activeSessionId])
 
   const loadSessionHistory = (sid) => {
-    fetch(`/api/history?session_id=${sid}`)
+    api.get(`/api/history?session_id=${sid}`)
       .then((res) => res.json())
       .then((data) => {
         setMessages(data.messages ? data.messages.map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content, timestamp: m.timestamp || new Date().toISOString() })) : [])
@@ -114,14 +130,14 @@ function App() {
   const switchSession = (sid) => { setActiveSessionId(sid); loadSessionHistory(sid) }
 
   const createSession = (name) => {
-    fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${name} (${currentSkill.label})` }) })
+    api.post('/api/sessions', { name: `${name} (${currentSkill.label})` })
       .then((res) => res.json())
       .then((data) => { setSessions((p) => [data, ...p]); switchSession(data.id) })
       .catch(console.error)
   }
 
   const deleteSession = (sid) => {
-    fetch(`/api/sessions/${sid}`, { method: 'DELETE' })
+    api.delete(`/api/sessions/${sid}`)
       .then(() => {
         setSessions((p) => p.filter((s) => s.id !== sid))
         if (activeSessionId === sid && sessions.length > 1) { const r = sessions.filter((s) => s.id !== sid); if (r.length) switchSession(r[0].id) }
@@ -130,7 +146,7 @@ function App() {
   }
 
   const renameSession = (sid, name) => {
-    fetch(`/api/sessions/${sid}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) })
+    api.put(`/api/sessions/${sid}`, { name })
       .then(() => setSessions((p) => p.map((s) => (s.id === sid ? { ...s, name } : s))))
       .catch(console.error)
   }
@@ -150,27 +166,23 @@ function App() {
     recordMessage()
 
     try {
-      const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: userMessage.content, mode, session_id: activeSessionId, skill }) })
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      const ts = new Date().toISOString()
-      let assistantMessage = { role: 'assistant', content: '', timestamp: ts }
+      let assistantMessage = { role: 'assistant', content: '', timestamp: now }
       setMessages((p) => [...p, assistantMessage])
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        for (const line of chunk.split('\n')) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6))
-              if (data.error) assistantMessage.content += `\n[Ошибка: ${data.error}]`
-              else if (data.content && !data.done) assistantMessage.content += data.content
-              setMessages((p) => { const u = [...p]; u[u.length - 1] = { ...assistantMessage }; return u })
-            } catch { /* skip */ }
-          }
+      
+      await api.sse('/api/chat', { 
+        message: userMessage.content, 
+        mode, 
+        session_id: activeSessionId, 
+        skill,
+        model: selectedModel
+      }, (data) => {
+        if (data.error) {
+          assistantMessage.content += `\n[Ошибка: ${data.error}]`
+        } else if (data.content && !data.done) {
+          assistantMessage.content += data.content
         }
-      }
+        setMessages((p) => { const u = [...p]; u[u.length - 1] = { ...assistantMessage }; return u })
+      })
     } catch (err) {
       console.error(err)
       setMessages((p) => [...p, { role: 'assistant', content: '[Ошибка соединения]', timestamp: new Date().toISOString() }])
@@ -236,7 +248,7 @@ function App() {
 
   const clearHistory = async () => {
     if (!activeSessionId) return
-    try { await fetch(`/api/history?session_id=${activeSessionId}`, { method: 'DELETE' }); setMessages([]) }
+    try { await api.delete(`/api/history?session_id=${activeSessionId}`); setMessages([]) }
     catch (err) { console.error(err) }
   }
 
@@ -251,6 +263,27 @@ function App() {
     const a = document.createElement('a'); a.href = url; a.download = `ai-mentor-${sn}-${new Date().toISOString().slice(0, 10)}.md`
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
     recordExport()
+  }
+
+  const submitFeedback = async () => {
+    if (!feedbackText.trim()) return
+    setFeedbackStatus('sending')
+    try {
+      await api.post('/api/feedback', {
+        message: feedbackText,
+        context: messages.slice(-10).map((m) => ({role: m.role, content: m.content})),
+        system_info: {
+          userAgent: navigator.userAgent,
+          skill, mode, model: selectedModel,
+          isElectron: window.electronAPI !== undefined
+        }
+      })
+      setFeedbackStatus('success')
+      setTimeout(() => { setShowFeedbackModal(false); setFeedbackStatus(''); setFeedbackText('') }, 2000)
+    } catch (err) {
+      console.error(err)
+      setFeedbackStatus('error')
+    }
   }
 
   const handleSkillConfirm = (newSkill) => {
@@ -326,6 +359,9 @@ function App() {
         </div>
 
         <div className="sidebar-tools">
+          <motion.button whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className={`tool-btn`} onClick={() => setShowFeedbackModal(true)}>
+            <Bug size={18} /> Сообщить об ошибке
+          </motion.button>
           <motion.button whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className={`tool-btn ${showCodeRunner ? 'tool-btn-active' : ''}`} onClick={() => { setPendingCode(''); setPendingTask(''); setShowCodeRunner(!showCodeRunner); setShowSQLRunner(false) }}>
             <Code size={18} /> Python REPL
           </motion.button>
@@ -366,6 +402,11 @@ function App() {
             {sessions.find((s) => s.id === activeSessionId) && <span className="session-badge">{sessions.find((s) => s.id === activeSessionId)?.name}</span>}
           </div>
           <div className="chat-header-actions">
+            <div className="model-selector">
+              <select className="voice-select" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}>
+                {AVAILABLE_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+              </select>
+            </div>
             {russianVoices.length > 0 && (
               <div className="voice-selector">
                 <select className="voice-select" value={selectedVoice || ''} onChange={(e) => setSelectedVoice(e.target.value)}>
@@ -431,8 +472,34 @@ function App() {
       )}
 
       {showSnippets && <SnippetsPanel isOpen={showSnippets} onClose={() => setShowSnippets(false)} />}
-      {showSolutionChecker && <SolutionChecker isOpen={showSolutionChecker} onClose={() => setShowSolutionChecker(false)} initialCode={pendingCode} initialTask={pendingTask} />}
+      {showSolutionChecker && <SolutionChecker isOpen={showSolutionChecker} onClose={() => setShowSolutionChecker(false)} initialCode={pendingCode} initialTask={pendingTask} model={selectedModel} />}
       {showStats && <StatsDashboard stats={stats} levelInfo={levelInfo} unlockedAchievements={unlockedAchievements} lockedAchievements={lockedAchievements} onClose={() => setShowStats(false)} onReset={resetProgress} />}
+      
+      {showFeedbackModal && (
+        <div className="feedback-overlay">
+          <div className="feedback-modal">
+            <h3>🐞 Сообщить об ошибке</h3>
+            <p>Опишите, что пошло не так. Мы автоматически прикрепим логи конфигурации и последние сообщения.</p>
+            <textarea
+              className="feedback-textarea"
+              rows={4}
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              placeholder="Что случилось?..."
+            />
+            <div className="feedback-actions">
+              <button className="btn-cancel" onClick={() => setShowFeedbackModal(false)}>Отмена</button>
+              <button 
+                className="btn-submit" 
+                onClick={submitFeedback}
+                disabled={!feedbackText.trim() || feedbackStatus === 'sending'}
+              >
+                {feedbackStatus === 'sending' ? 'Отправка...' : feedbackStatus === 'success' ? '✔ Успех' : feedbackStatus === 'error' ? '❌ Ошибка' : 'Отправить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
