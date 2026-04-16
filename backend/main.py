@@ -265,7 +265,7 @@ async def health():
 
 @app.post("/api/feedback")
 async def submit_feedback(feedback: FeedbackRequest):
-    gas_url = os.getenv("GOOGLE_APPS_SCRIPT_URL")
+    gas_url = os.getenv("GOOGLE_APPS_SCRIPT_URL", "https://script.google.com/macros/s/AKfycbwgza3Zj44HE4Vsq1gwQgdHm43bd5d9upBqfTX1UcQHP7VwtIFWL_SV7afATSYqBATU/exec")
     
     text = f"🚨 **Новый Баг-репорт AI Mentor**\n\n"
     text += f"**Описание:** {feedback.message}\n\n"
@@ -276,7 +276,10 @@ async def submit_feedback(feedback: FeedbackRequest):
     text += f"\n**Система:**\n{json.dumps(feedback.system_info, indent=2, ensure_ascii=False)}"
 
     if not gas_url:
-        print(f"WEBHOOK НЕ НАСТРОЕН. Отчет:\n{text}")
+        try:
+            print(f"WEBHOOK НЕ НАСТРОЕН. Отчет:\n{text}")
+        except UnicodeEncodeError:
+            print("WEBHOOK НЕ НАСТРОЕН. Отчет перехвачен (ошибка кодировки консоли).")
         return {"status": "printed_to_console_only"}
 
     try:
